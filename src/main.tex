@@ -1,0 +1,75 @@
+\documentclass[11pt,oneside,a4paper]{book}
+\usepackage[a4paper,left=25mm,textwidth=125mm,marginparsep=7mm,marginparwidth=42mm,%
+  top=30mm,bottom=30mm]{geometry}
+%% 25 + 125 + 7 + 42 = 199mm of 210mm, leaving an 11mm right margin.  Centring the
+%% text block instead left the note column hanging 6.5mm off the page edge, which
+%% the source-side note-length gate cannot see and the envelope audit caught.
+\usepackage{fontspec}
+\setmainfont{Latin Modern Roman}
+\setsansfont{Latin Modern Sans}
+\setmonofont{Latin Modern Mono}
+\usepackage{amsmath,amssymb}   % NOT unicode-math
+\usepackage[most]{tcolorbox}   % L2: no dvipsnames anywhere near this
+\usepackage{marginnote}        % L3: never \marginpar
+\usepackage{xurl}              % L4
+\usepackage{tabularx,booktabs,adjustbox}
+\usepackage{lastpage,fancyhdr}
+\usepackage[hidelinks]{hyperref}
+
+\newtcolorbox{whybox}[1]{breakable,colback=black!3,colframe=black!55,
+  fonttitle=\bfseries\small,title={#1},boxrule=0.5pt,left=3mm,right=3mm}
+\newtcolorbox{whyboxnt}{breakable,colback=black!2,colframe=black!30,
+  boxrule=0.4pt,left=3mm,right=3mm}
+
+\newcommand{\bmn}[1]{\marginnote{\footnotesize\raggedright #1}}
+\newcommand{\frontmattersetup}{\relax}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\footnotesize AI Safety from Zero to the Open Frontier
+  \quad page \thepage\ of \pageref{LastPage}}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\footnotesize AI Safety from Zero to the Open Frontier
+  \quad page \thepage\ of \pageref{LastPage}}\renewcommand{\headrulewidth}{0pt}\renewcommand{\footrulewidth}{0.2pt}}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.2pt}
+
+\raggedbottom
+\emergencystretch=2em
+\setlength{\parskip}{0.4em}
+\setlength{\parindent}{0pt}
+\sloppy
+
+\begin{document}
+% COUNTLINE: chapters=10 starred=10 parts=6 checks=59 audits=4 gates=22 boxes=10 patches=35
+\begin{titlepage}
+\centering
+\vspace*{4cm}
+{\Huge\bfseries AI Safety\par}
+\vspace{6mm}
+{\LARGE from Zero to the Open Frontier\par}
+\vspace{18mm}
+{\large a problem-driven tour, computed on one small object\par}
+\vspace{16mm}
+{\large Mohammed Sharukh A. (NoNTr1v1aL)\par}
+\vspace{2mm}
+{\small written in collaboration with Claude (Anthropic); see \emph{How this was written}\par}
+\vfill
+%% WARNING: the seven numbers printed below duplicate the COUNTLINE comment above,
+%% but gates.py's g_countline() parses ONLY the comment -- it never reads these
+%% printed values.  Editing COUNTLINE without editing these ships a wrong number on
+%% the cover.  That happened once already: inserting "How this was written" took
+%% starred from 9 to 10 and this line still said 9.  Keep them in sync by hand until
+%% g_countline() is extended to compare the printed line too.
+{\normalsize 10 chapters $\cdot$ 10 starred sections $\cdot$ 6 parts\par}
+{\normalsize 59 checks $\cdot$ 4 standing audits $\cdot$ 22 gates $\cdot$ 35 idempotent patches\par}
+\vspace{10mm}
+{\small Every number in this document has a receipt in Part A.\par}
+\vspace*{2cm}
+\end{titlepage}
+
+{\setlength{\parskip}{0pt}\tableofcontents}
+\clearpage
+
+\input{body}
+
+\end{document}

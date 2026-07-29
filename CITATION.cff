@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+title: AI Safety from Zero to the Open Frontier
+message: >-
+  If you refer to this book, please cite it using the metadata below.
+type: generic
+authors:
+  - family-names: A.
+    given-names: Mohammed Sharukh
+    affiliation: >-
+      MSc Mathematics, Indian Institute of Technology Palakkad
+abstract: >-
+  A problem-driven tour of AI safety, grounded in landmark original papers, in
+  which every printed number is computed on a single five-state Markov decision
+  process in exact rational arithmetic and carries a receipt naming the check
+  that produced it. Ten chapters, each identifying a distinct mechanism by which
+  a measured quantity and an intended one come apart. Exposition of published
+  results, not original research; written in collaboration with Claude
+  (Anthropic), as disclosed in the book.
+keywords:
+  - AI safety
+  - AI alignment
+  - reward specification
+  - Goodhart's law
+  - reinforcement learning
+  - interpretability
+  - scalable oversight
+license: CC-BY-4.0
+date-released: '2026-07-29'
+url: 'https://github.com/MohammedSharukh/ai-safety-from-zero'
