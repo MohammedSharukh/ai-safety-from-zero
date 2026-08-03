@@ -7,18 +7,21 @@ moment a unit is added.  Every number below comes from an artifact, and gates.py
 parses the numbers back out of the COUNTLINE and ties them to source counts.
 """
 
+import glob
 import os
 import re
 import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+SRCDIR = os.path.join(HERE, 'src')
+CHECKDIR = os.path.join(HERE, 'checks')
 
 
 def derive():
-    body = open(os.path.join(HERE, 'body.tex')).read()
-    tour = open(os.path.join(HERE, 'tour.md')).read()
-    sys.path.insert(0, HERE)
+    body = open(os.path.join(SRCDIR, 'body.tex')).read()
+    tour = open(os.path.join(SRCDIR, 'tour.md')).read()
+    sys.path.insert(0, CHECKDIR)
     import verify
     import gates as gatemod
     n = {}
@@ -42,6 +45,10 @@ TITLE = r"""%% COUNTLINE: chapters=%(chapters)d starred=%(starred)d parts=%(part
 {\LARGE from Zero to the Open Frontier\par}
 \vspace{18mm}
 {\large a problem-driven tour, computed on one small object\par}
+\vspace{16mm}
+{\large Mohammed Sharukh A. (NoNTr1v1aL)\par}
+\vspace{2mm}
+{\small written in collaboration with Claude (Anthropic); see \emph{How this was written}\par}
 \vfill
 {\normalsize %(chapters)d chapters $\cdot$ %(starred)d starred sections $\cdot$ %(parts)d parts\par}
 {\normalsize %(checks)d checks $\cdot$ %(audits)d standing audits $\cdot$ %(gates)d gates $\cdot$ %(patches)d idempotent patches\par}
@@ -99,7 +106,7 @@ PREAMBLE = r"""\documentclass[11pt,oneside,a4paper]{book}
 def write_main(n):
     out = PREAMBLE + (TITLE % n) + "\n{\\setlength{\\parskip}{0pt}\\tableofcontents}\n\\clearpage\n\n" \
         + "\\input{body}\n\n\\end{document}\n"
-    path = os.path.join(HERE, 'main.tex')
+    path = os.path.join(SRCDIR, 'main.tex')
     open(path, 'w').write(out)
     return path
 
@@ -108,7 +115,8 @@ def run_latex(passes=3):
     log = ''
     for k in range(passes):
         p = subprocess.run(['xelatex', '-interaction=nonstopmode', 'main.tex'],
-                           cwd=HERE, capture_output=True, text=True, timeout=900)
+                           cwd=SRCDIR, capture_output=True, text=True,
+                           encoding='utf-8', errors='replace', timeout=900)
         log = p.stdout
     return log
 
@@ -118,7 +126,8 @@ def main():
     # source change could silently fail to reach the PDF -- which is exactly what
     # happened once, and was caught only by a content gate on the rendered text.
     rc = subprocess.run([sys.executable, os.path.join(HERE, 'md2tex.py')],
-                        cwd=HERE, capture_output=True, text=True)
+                        cwd=HERE, capture_output=True, text=True,
+                           encoding='utf-8', errors='replace')
     print(rc.stdout.strip() or rc.stderr.strip())
     if rc.returncode != 0:
         return 1
@@ -126,11 +135,28 @@ def main():
     print('derived counts:', ' '.join('%s=%s' % kv for kv in sorted(n.items())))
     write_main(n)
     run_latex()
-    pdf = os.path.join(HERE, 'main.pdf')
+    pdf = os.path.join(SRCDIR, 'main.pdf')
     if not os.path.exists(pdf):
         print('BUILD FAILED: no main.pdf')
         return 1
-    pages = subprocess.run(['pdfinfo', pdf], capture_output=True, text=True)
+    # The two pixel gates read src/pages/p-*.png at 100 dpi (gates.py's
+    # trim constant is 8*100/25.4).  Nothing used to produce them, so
+    # g_envelope and g_pixels were unreachable from any clone.
+    pagedir = os.path.join(SRCDIR, 'pages')
+    os.makedirs(pagedir, exist_ok=True)
+    for stale in glob.glob(os.path.join(pagedir, 'p-*.png')):
+        os.remove(stale)
+    rr = subprocess.run(['pdftoppm', '-png', '-r', '100', pdf,
+                         os.path.join(pagedir, 'p')],
+                        capture_output=True, text=True,
+                           encoding='utf-8', errors='replace')
+    if rr.returncode != 0:
+        print('WARNING: pdftoppm failed; the two pixel gates cannot run')
+    else:
+        print('rendered %d page rasters at 100 dpi'
+              % len(glob.glob(os.path.join(pagedir, 'p-*.png'))))
+    pages = subprocess.run(['pdfinfo', pdf], capture_output=True, text=True,
+                           encoding='utf-8', errors='replace')
     m = re.search(r'Pages:\s+(\d+)', pages.stdout)
     print('main.pdf built: %d bytes, %s pages' % (os.path.getsize(pdf),
                                                   m.group(1) if m else '?'))

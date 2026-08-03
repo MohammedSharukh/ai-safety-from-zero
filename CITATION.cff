@@ -2,7 +2,7 @@ cff-version: 1.2.0
 title: AI Safety from Zero to the Open Frontier
 message: >-
   If you refer to this book, please cite it using the metadata below.
-type: generic
+type: book
 authors:
   - family-names: A.
     given-names: Mohammed Sharukh
@@ -24,6 +24,7 @@ keywords:
   - reinforcement learning
   - interpretability
   - scalable oversight
+version: 1.0.1
 license: CC-BY-4.0
-date-released: '2026-07-29'
+date-released: '2026-08-03'
 url: 'https://github.com/MohammedSharukh/ai-safety-from-zero'
