@@ -161,6 +161,7 @@ Known items carried at lower confidence:
 | `checks/verify.py` | The 59 numbered checks and 4 standing audits |
 | `checks/gates.py` | 22 structural and render gates |
 | `checks/mutate.py` | Mutation testing over the check data |
+| `checks/receipts.py` | Asserts every Part A row is the live receipt verbatim; `--write` regenerates the table from a suite run |
 | `checks/patches.py`, `checks/patches_extra.py` | Idempotent source patches |
 | `md2tex.py`, `build.py` | Transpiler and build pipeline |
 | `CITATION.cff` | How to cite |

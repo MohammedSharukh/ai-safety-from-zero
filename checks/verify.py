@@ -1468,7 +1468,7 @@ def check_41():
 
 
 def check_42():
-    """The depth advantage is paid for in judge reliability, and the price is exact."""
+    """The depth advantage is paid for in judge reliability, priced on a 1/10000 grid."""
     alpha = F(99, 100)
     grid = [F(i, 10000) for i in range(9000, 10001)]
     needed = []
@@ -1667,31 +1667,46 @@ def check_47():
 
 def check_48():
     """'Triangle' does not determine the numbers -- the sum-to-zero condition does."""
+    # Exhaustive over UNORDERED triples.  The previous version broke out of
+    # three nested loops after four hits, so the published count was a loop
+    # bound rather than a result, and it enumerated ordered triples (a 6x
+    # over-count).  It also published "every one fails the sum-to-zero
+    # condition" while checking that only on the four it happened to collect.
+    grid = [v for v in product(range(-3, 4), repeat=2) if v != (0, 0)]
+    n_triples = len(grid) * (len(grid) - 1) * (len(grid) - 2) // 6
     triangles = []
-    for a in product(range(-3, 4), repeat=2):
-        for b in product(range(-3, 4), repeat=2):
-            for c in product(range(-3, 4), repeat=2):
-                V = [a, b, c]
-                if any(v == (0, 0) for v in V):
-                    continue
-                if len({tuple(v) for v in V}) < 3:
-                    continue
-                cs = [cos2(V[i], V[j]) for i, j in combinations(range(3), 2)]
-                if len(set(cs)) == 1 and cs[0] != F(1, 4):
-                    triangles.append((V, cs[0]))
-                    if len(triangles) > 3:
-                        break
-            if len(triangles) > 3:
-                break
-        if len(triangles) > 3:
-            break
+    for V in combinations(grid, 3):
+        cs = [cos2(V[i], V[j]) for i, j in combinations(range(3), 2)]
+        if len(set(cs)) == 1 and cs[0] != F(1, 4):
+            triangles.append((V, cs[0]))
     assert triangles, "no equal-cosine triple with a different value exists in the grid"
-    for V, c in triangles:
-        assert c != F(1, 4), (V, c)
-        s = tuple(sum(v[k] for v in V) for k in range(2))
-        assert s != (0, 0), (V, s)                   # and none of them sums to zero
-    return ("found %d equally-spaced triples whose common cos^2 is NOT 1/4; every one fails the "
-            "sum-to-zero condition, which is what fixes the number" % len(triangles))
+
+    def norm2(v):
+        return v[0] ** 2 + v[1] ** 2
+
+    zero_sum = [V for V, _ in triangles
+                if tuple(sum(v[k] for v in V) for k in range(2)) == (0, 0)]
+    equal_norm = [V for V, _ in triangles if len({norm2(v) for v in V}) == 1]
+    both = [V for V in zero_sum if len({norm2(v) for v in V}) == 1]
+    values = {c for _, c in triangles}
+
+    # The discriminating condition is EQUAL NORMS, not sum-to-zero: some of
+    # these triples do sum to zero.  Sum-to-zero with UNEQUAL norms is exactly
+    # the loophole, which is why the chapter's one-line derivation writes the
+    # norm sum as 3 (three unit vectors) before solving for the cosine.
+    assert zero_sum, "expected some zero-sum counterexamples to the weaker claim"
+    assert not equal_norm, equal_norm[:3]
+    assert not both, both[:3]
+    W = tri_frame()
+    assert len({tuple(w) for w in W}) == 3
+    assert max(cos2(W[i], W[j]) for i, j in combinations(range(3), 2)) == F(1, 4)
+    return ("exhaustive over all %d unordered triples of the %d non-zero integer directions in "
+            "(-3..3)^2: %d have a common pairwise cos^2 other than 1/4, every one of them %s; "
+            "%d of the %d DO sum to zero, so sum-to-zero alone does not force 1/4 -- %d have "
+            "equal norms, and equal norms is the condition that does"
+            % (n_triples, len(grid), len(triangles),
+               '/'.join(str(v) for v in sorted(values)), len(zero_sum),
+               len(triangles), len(equal_norm)))
 
 
 def check_49():
@@ -1835,10 +1850,11 @@ def check_53():
     assert counts[-1] == len(surviving), (counts[-1], len(surviving))
     for w in surviving:
         assert prefers(w, trigger[0], trigger[1]), w
-    return ("ordinary adversarial training thins the backdoored population %s -- an 82%% cut "
+    pct = round(100 * (1 - F(counts[-1], counts[0])))
+    return ("ordinary adversarial training thins the backdoored population %s -- a cut of %d%% "
             "that never reaches zero; every one of the %d survivors still fires on the untouched "
             "trigger, and only training on the trigger removes them, which requires knowing it"
-            % (' -> '.join(str(c) for c in counts), counts[-1]))
+            % (' -> '.join(str(c) for c in counts), pct, counts[-1]))
 
 
 
