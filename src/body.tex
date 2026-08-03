@@ -74,7 +74,7 @@ Provenance split: representation-up-to-affine is vNM's [verified-secondary; edit
 \item Census: 4 deterministic policies, 3 distinct behaviours, fibre sizes (2,1,1). The two off-policies disagree at \texttt{m} and are indistinguishable, because \texttt{m} is never reached. [check 1]
 \item Values: $r = (A:3, B:0, bot:2)$, $\gamma = 1/2$. $V(off) = 1$, $V(on,a) = 3/4$, $V(on,b) = 0$. The kettle stays off, though $r$ ranks $A$ strictly above $bot$. [check 2]
 \item The gauge: at $\gamma = 1$, $r \to \alpha r + \beta$ with $\alpha > 0$ leaves the optimal set fixed across 400 draws. At $\gamma = 1/2$ it does not; a bare additive shift flips the optimum, found by search. [check 3]
-\item The circle: in the plane sum-zero the three walls are pairwise at 60 degrees exactly, $\cos^2 = 1/4$ as an exact rational. A search over 4000 lattice directions finds all six orderings and no seventh. [check 4]
+\item The circle: in the plane sum-zero the three walls are pairwise at 60 degrees exactly, $\cos^2 = 1/4$ as an exact rational. A search over 4000 lattice directions realises all six arcs, none of them empty. [check 4]
 \item Two-to-one: for each ordering, 200 rewards with that ordering give one behaviour; six map onto three, every fibre of size two. [check 5]
 \item Where it stops: at $\gamma = 1/2$ the same search finds two rewards with the same ordering and different optimal behaviours; at $\gamma = 1$ it finds none. [check 6]
 \end{enumerate}
@@ -721,7 +721,7 @@ Superposition is not a network being untidy; it is a network solving a packing p
 
 \begin{enumerate}
 \item The frame. Sum zero, squared norms $2/3$, pairwise inner products $-1/3$, cosines $-1/2$. Exact rationals throughout, because the coordinates are rational in the sum-zero plane even though the planar picture is not. [check 45]
-\item The bound, and why the construction is a projection. Over all triples of 44 rational planar directions the largest pairwise $\cos^2$ is never below $1/4$ and \textbf{never equal to it} -- the bound itself is Welch [primary-verified: IEEE Transactions on Information Theory IT-20(3), pp. 397-399, 1974] -- the best achievable is $9/34$. Sixty degrees needs $\tan = \sqrt{3}$, so no rational planar triple attains the optimum. The projected frame attains it exactly. [check 46]
+\item The bound, and why the construction is a projection. Over all triples of 24 rational planar directions the largest pairwise $\cos^2$ is never below $1/4$ and \textbf{never equal to it} -- the bound itself is Welch [primary-verified: IEEE Transactions on Information Theory IT-20(3), pp. 397-399, 1974] -- the best achievable is $9/34$. Sixty degrees needs $\tan = \sqrt{3}$, so no rational planar triple attains the optimum. The projected frame attains it exactly. [check 46]
 \item The capacity trade, priced. With a rectifying decoder, superposition beats dedicating dimensions for every sparsity below $91/200$ and never at or above $23/50$; the crossover is bracketed by an exact sign change of $3p^2 + 3p - 2$. [check 47]
 \item What the word does not determine. Four equally-spaced planar triples have a common $\cos^2$ other than $1/4$, and every one of them fails the sum-to-zero condition. The condition, not the shape name, is what fixes the number. [check 48]
 \item What two dimensions cannot say. The eight activation patterns collapse to seven codes, and the single collision is exactly the empty set against the full set: \textbf{silence and saturation are the same vector.} [check 49]
@@ -1000,7 +1000,7 @@ Every number printed anywhere in this tour has a receipt here, and every line be
 24 & 4 & maximising r and minimising -r are identical on all 125 weightings; the same test separates 120 unrelated pairs, so it is not vacuous \\
 25 & 5 & wait >= max(act, off) on 600 beliefs; 575 strict and 25 tight, and tightness coincides exactly with U being single-signed \\
 26 & 5 & deference gap equals EVPI exactly on 400 beliefs, by two code paths; zero when the sign is known \\
-27 & 5 & on 292 mixed-sign beliefs the deference threshold is p* = max(E[U+], -E[U-])/E[/U/], always at least 1/2, and a 240-point grid scan lands within one grid step of it \\
+27 & 5 & on 292 mixed-sign beliefs the deference threshold is p* = max(E[U+], -E[U-])/E[abs U], always at least 1/2, and a 240-point grid scan lands within one grid step of it \\
 \bottomrule
 \end{tabularx}
 \par\medskip
@@ -1051,7 +1051,7 @@ Every number printed anywhere in this tour has a receipt here, and every line be
 51 & 10 & a colluding monitor drives safety to exactly 0 at every threshold but total deferral, against 3/4 for a trusted one; a single synthetic probe detects the collusion with certainty \\
 52 & 10 & five independent layers cut failure from 1/2 to 1/32; at correlation 1 the same five layers cut it to 1/2, and the benefit of depth falls monotonically to exactly zero as correlation rises \\
 53 & 10 & ordinary adversarial training thins the backdoored population 83 -> 37 -> 15 -- an 82\% cut that never reaches zero; every one of the 15 survivors still fires on the untouched trigger, and only training on the trigger removes them, which requires knowing it \\
-54 & audit & 10 numbered chapters, each with exactly 1 key claim, 1 signpost and 1 demystification; 9 starred sections with none; receipts referenced gapless 1..53; with a prose mention injected a naive phrase count says 11 and the tight opener still says 10; part letters ABCDEF contiguous from A \\
+54 & audit & 10 numbered chapters, each with exactly 1 key claim, 1 signpost and 1 demystification; 10 starred sections with none; receipts referenced gapless 1..53; with a prose mention injected a naive phrase count says 11 and the tight opener still says 10; part letters ABCDEF contiguous from A \\
 \bottomrule
 \end{tabularx}
 \par\medskip
@@ -1060,7 +1060,7 @@ Every number printed anywhere in this tour has a receipt here, and every line be
 \toprule
 \# & Ch & What the check establishes \\
 \midrule
-55 & audit & 42 rows non-decreasing; 7 era bands contiguous and covering with 3 ambiguous seams; 40 life spans printed and 12 left blank; 5 written/published pairs, widest gap 53 years \\
+55 & audit & 45 rows non-decreasing; 7 era bands contiguous and covering with 3 ambiguous seams; 41 life spans printed and 12 left blank; 5 written/published pairs, widest gap 53 years \\
 56 & c2c & swept all 625 shaping terms: optimality-preserving IF AND ONLY IF realisable by a terminal-vanishing potential, 13 of 625, zero mismatches -- the converse is now computed on the anchor, not cited \\
 57 & c2c & every one of 391 distinct behaviours in a 6-planner by 216-reward class admits at least 2 decompositions, and up to 36; no behaviour identifies its pair. The rationality confound is only partly reachable: a beta-partner needs w\textasciicircum{}beta, which leaves any finite pool \\
 58 & c2c & Q-learning indifferent and Sarsa strictly avoidant across 180 (reward, rate) combinations, with the q=0 control tying in every one \\
@@ -1440,7 +1440,7 @@ gates, all passing & 22 \\
 \toprule
 Quantity & Value \\
 \midrule
-pages, footered, envelope-clean & 77 \\
+pages, footered, envelope-clean & 81 \\
 \bottomrule
 \end{tabularx}
 \par\medskip
@@ -1497,7 +1497,7 @@ Running total after the final proofread: \textbf{two false negatives, four false
 
 \section*{The final external round}
 
-A last verification pass was run against the finished PDF rather than against the source, because what shipped is what matters. It audited roughly fifty bibliographic assertions, fourteen folklore verdicts, forty printed life spans and seven event dates.
+A last verification pass was run against the finished PDF rather than against the source, because what shipped is what matters. It audited roughly fifty bibliographic assertions, fourteen folklore verdicts, forty-one printed life spans and seven event dates.
 
 It raised \textbf{two alerts, and only one was live.} The live one was a wrong issue number for Bostrom 2012, printed as 22(1) where the correct citation is 22(2), pp. 71-85; it is corrected in the bibliography, and the superseded number now appears only inside its own correction. The second alert suspected that this document attributed the lift of debate to NEXP to the 2018 debate paper rather than to Barnes and Christiano. \textbf{It did not.} A search found zero sentences bundling the two, and the NEXP result was already carried as verified-secondary, separately from the primary-verified attribution. Patching would have damaged a correct passage.
 

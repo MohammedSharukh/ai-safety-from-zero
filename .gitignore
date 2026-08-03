@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+
+# build artefacts -- regenerate with: python build.py
+src/main.pdf
+src/main.aux
+src/main.log
+src/main.out
+src/main.toc
+src/pages/

@@ -14,7 +14,8 @@ import os
 
 from patches_extra import EXTRA as _EXTRA
 
-SRC = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tour.md')
+SRC = os.path.join(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__))), 'src', 'tour.md')
 
 PATCHES = [
     dict(
@@ -300,7 +301,7 @@ extracted from the page it describes.'''),
     dict(
         id='P-E3', mode='replace',
         anchor='| idempotent patches, three branches proven each | 12 |',
-        marker='| pages, footered, envelope-clean | 77 |',
+        marker='gates, all passing',
         new='''| idempotent patches, three branches proven each | 20 |
 | gates, all passing | 21 |
 | pages, footered, envelope-clean | 77 |'''),

@@ -985,7 +985,7 @@ def check_27():
         assert wait_value(F(0)) <= best_committed
         checked += 1
     assert checked > 100, checked
-    return ("on %d mixed-sign beliefs the deference threshold is p* = max(E[U+], -E[U-])/E[|U|], "
+    return ("on %d mixed-sign beliefs the deference threshold is p* = max(E[U+], -E[U-])/E[abs U], "
             "always at least 1/2, and a 240-point grid scan lands within one grid step of it"
             % checked)
 
@@ -1631,7 +1631,7 @@ def check_46():
     # coordinates are rational in the sum-zero plane of R^3, not in R^2.
     assert best > F(1, 4), best
     assert attained == 0, attained
-    assert len(dirs) > 20, len(dirs)
+    assert len(dirs) == 24, len(dirs)
     W = tri_frame()
     assert max(cos2(W[i], W[j]) for i, j in combinations(range(3), 2)) == F(1, 4)
     return ("over all %d triples of %d rational planar directions the largest pairwise cos^2 is "
@@ -1843,7 +1843,8 @@ def check_53():
 
 
 # ---------------------------------------------- the count audit (Phase 3 gate)
-TOUR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tour.md')
+TOUR = os.path.join(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__))), 'src', 'tour.md')
 
 
 def _sections(text):

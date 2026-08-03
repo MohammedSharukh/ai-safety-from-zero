@@ -18,11 +18,12 @@ import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-LOG = os.path.join(HERE, 'main.log')
-PDF = os.path.join(HERE, 'main.pdf')
-BODY = os.path.join(HERE, 'body.tex')
-TOUR = os.path.join(HERE, 'tour.md')
-MAIN = os.path.join(HERE, 'main.tex')
+SRCDIR = os.path.join(os.path.dirname(HERE), 'src')
+LOG = os.path.join(SRCDIR, 'main.log')
+PDF = os.path.join(SRCDIR, 'main.pdf')
+BODY = os.path.join(SRCDIR, 'body.tex')
+TOUR = os.path.join(SRCDIR, 'tour.md')
+MAIN = os.path.join(SRCDIR, 'main.tex')
 
 RESULTS = []
 
@@ -214,7 +215,8 @@ def g_marginnotes():
 # ------------------------------------------------------------------- pdf gates
 @gate('all fonts embedded, no Type 3')
 def g_fonts():
-    p = subprocess.run(['pdffonts', PDF], capture_output=True, text=True)
+    p = subprocess.run(['pdffonts', PDF], capture_output=True, text=True,
+                     encoding='utf-8', errors='replace')
     rows = [r for r in p.stdout.split('\n')[2:] if r.strip()]
     bad = []
     for r in rows:
@@ -231,8 +233,8 @@ def g_fonts():
 def g_bookmarks():
     body = open(BODY).read()
     headings = len(re.findall(r'\\chapter\{', body)) + len(re.findall(r'\\chapter\*\{', body))
-    out = open(os.path.join(HERE, 'main.out'), errors='replace').read() \
-        if os.path.exists(os.path.join(HERE, 'main.out')) else ''
+    out = open(os.path.join(SRCDIR, 'main.out'), errors='replace').read() \
+        if os.path.exists(os.path.join(SRCDIR, 'main.out')) else ''
     marks = len(re.findall(r'BOOKMARK', out))
     return marks > 0 and marks >= headings, 'bookmarks=%d headings=%d' % (marks, headings)
 
@@ -243,11 +245,13 @@ def g_footer():
     footer at all, which no log gate can see."""
     import subprocess as sp
     n = int(re.search(r'Pages:\s+(\d+)',
-            sp.run(['pdfinfo', PDF], capture_output=True, text=True).stdout).group(1))
+            sp.run(['pdfinfo', PDF], capture_output=True, text=True,
+                     encoding='utf-8', errors='replace').stdout).group(1))
     printed, missing = [], []
     for p in range(1, n + 1):
         txt = sp.run(['pdftotext', '-f', str(p), '-l', str(p), PDF, '-'],
-                     capture_output=True, text=True).stdout
+                     capture_output=True, text=True,
+                     encoding='utf-8', errors='replace').stdout
         m = re.search(r'page (\d+) of (\d+)', norm(txt))
         if m:
             printed.append((p, int(m.group(1)), int(m.group(2))))
@@ -272,11 +276,13 @@ def g_sparse():
     normal typography; a page carrying only a heading is a defect."""
     import subprocess as sp
     n = int(re.search(r'Pages:\s+(\d+)',
-            sp.run(['pdfinfo', PDF], capture_output=True, text=True).stdout).group(1))
+            sp.run(['pdfinfo', PDF], capture_output=True, text=True,
+                     encoding='utf-8', errors='replace').stdout).group(1))
     sparse, blank, bad = [], [], []
     for p in range(1, n + 1):
         txt = norm(sp.run(['pdftotext', '-f', str(p), '-l', str(p), PDF, '-'],
-                          capture_output=True, text=True).stdout)
+                          capture_output=True, text=True,
+                     encoding='utf-8', errors='replace').stdout)
         body = re.sub(r'AI Safety from Zero to the Open Frontier page \d+ of \d+', '', txt).strip()
         if not body:
             blank.append(p)
@@ -296,7 +302,7 @@ def g_envelope():
     from PIL import Image
     import glob
     import numpy as np
-    files = sorted(glob.glob(os.path.join(HERE, 'pages', 'p-*.png')))
+    files = sorted(glob.glob(os.path.join(SRCDIR, 'pages', 'p-*.png')))
     if not files:
         return False, 'no rendered pages'
     trim = int(8 * 100 / 25.4)
@@ -329,11 +335,13 @@ def g_sweep():
     contents page, plus locked facts present and superseded slips absent."""
     import subprocess as sp
     n = int(re.search(r'Pages:\s+(\d+)',
-            sp.run(['pdfinfo', PDF], capture_output=True, text=True).stdout).group(1))
+            sp.run(['pdfinfo', PDF], capture_output=True, text=True,
+                     encoding='utf-8', errors='replace').stdout).group(1))
     pages = []
     for p in range(1, n + 1):
         pages.append(norm(sp.run(['pdftotext', '-f', str(p), '-l', str(p), PDF, '-'],
-                                 capture_output=True, text=True).stdout))
+                                 capture_output=True, text=True,
+                     encoding='utf-8', errors='replace').stdout))
     doc = '\n'.join(pages)
     problems = []
     for art in ('??', '**', '\\begin{', '\\end{', '\\textbf', '\\texttt', '\x01', '\x02'):
@@ -390,7 +398,7 @@ def g_pixels():
     import glob
     import numpy as np
     import subprocess as sp
-    files = sorted(glob.glob(os.path.join(HERE, 'pages', 'p-*.png')))
+    files = sorted(glob.glob(os.path.join(SRCDIR, 'pages', 'p-*.png')))
     if not files:
         return False, 'no rendered pages'
     textw = int(125 * 100 / 25.4)
@@ -407,7 +415,8 @@ def g_pixels():
 
     def text(p):
         return sp.run(['pdftotext', '-f', str(p), '-l', str(p), PDF, '-'],
-                      capture_output=True, text=True).stdout
+                      capture_output=True, text=True,
+                     encoding='utf-8', errors='replace').stdout
 
     boxed = {i + 1 for i, f in enumerate(files) if grey_rows(f) > 20}
     kc = {p for p in range(1, len(files) + 1) if 'KEY CLAIM' in text(p)}
@@ -428,7 +437,7 @@ def g_pixels():
 def g_current():
     """Regenerate into memory and compare.  A stale body.tex once let a corrected
     citation sit in the source while the PDF printed the old one."""
-    sys.path.insert(0, HERE)
+    sys.path.insert(0, os.path.dirname(HERE))
     import importlib
     import md2tex
     importlib.reload(md2tex)
@@ -444,7 +453,8 @@ def g_current():
 @gate('verify.py all-pass')
 def g_verify():
     p = subprocess.run([sys.executable, os.path.join(HERE, 'verify.py')],
-                       capture_output=True, text=True, timeout=1800)
+                       capture_output=True, text=True,
+                     encoding='utf-8', errors='replace', timeout=1800)
     m = re.search(r'---- (\d+)/(\d+) checks pass, (\d+) audits pass', p.stdout)
     return (p.returncode == 0 and m and m.group(1) == m.group(2)), \
         (m.group(0) if m else 'no summary')

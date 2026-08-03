@@ -5,7 +5,7 @@ every number is computed on one five-state MDP and carries a receipt.**
 
 *Mohammed Sharukh A. (NoNTr1v1aL)*
 
-[**Read the book (PDF, 81 pages)**](./AI-Safety-from-Zero.pdf)
+[**Read the book (PDF, 82 pages)**](./AI-Safety-from-Zero.pdf)
 
 ---
 
@@ -71,7 +71,9 @@ Every fact carries one of three provenance flags — `primary-verified`,
 
 ## Reproducing the checks
 
-No dependencies. Python 3 standard library only. Exact rational arithmetic and
+`verify.py` and `mutate.py` need no dependencies: Python 3 standard
+library only. (`gates.py` additionally needs `numpy`, `Pillow` and
+poppler -- see below.) Exact rational arithmetic and
 exhaustive enumeration throughout; no result depends on a floating-point tolerance.
 
 ```bash
@@ -104,11 +106,15 @@ and proves nothing. That detector has fired on the author.
 python checks/gates.py
 ```
 
-Eleven of the 22 gates rasterise the PDF to check fonts, bookmarks, footer continuity,
-margin ink and box detection. They require `poppler-utils` (`pdftoppm`, `pdffonts`) on
+Six of the 22 gates read the rendered PDF to check fonts, bookmarks,
+footer continuity, margin ink and box detection. They require
+`poppler-utils` (`pdfinfo`, `pdftotext`, `pdffonts`, `pdftoppm`), plus
+`numpy` and `Pillow`, on
 your `PATH`. **Without it those eleven fail with a file-not-found error rather than
 skipping** — a missing dependency, not a defect in the document. The source-side gates
-and the full check suite run without it.
+and the full check suite run without it. `gates.py` itself needs
+poppler and a built PDF: run `python build.py` first, which also
+renders `src/pages/`.
 
 ## How this was written
 

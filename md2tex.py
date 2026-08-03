@@ -21,8 +21,8 @@ import sys
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SRC = os.path.join(HERE, 'tour.md')
-OUT = os.path.join(HERE, 'body.tex')
+SRC = os.path.join(HERE, 'src', 'tour.md')
+OUT = os.path.join(HERE, 'src', 'body.tex')
 
 MATH = '\x01MATH%d\x01'
 RAW = '\x02RAW%d\x02'
