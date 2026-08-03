@@ -271,6 +271,42 @@ def gates(body):
         fails.append('mid-sentence \\end{item...}')
     if r'\marginpar' in body:
         fails.append('L3: \\marginpar used instead of marginnote')
+    # C6: a control word that lost its backslash.  Earned by a passthrough
+    # written through a shell heredoc that ate one backslash: "\newpage" became
+    # a newline plus the bare word "ewpage", which set as body text in the PDF
+    # while ALL 22 gates passed -- the leakage gate only looks for its own
+    # sentinels, and a lone lowercase word trips nothing else.  These stems are
+    # never English in this book, and the truncated forms are what mangling
+    # actually produces (\newpage -> ewpage, \par -> ar are both caught).
+    # COMMAND names only.  Environment names such as tikzpicture and tabularx
+    # are deliberately absent: they legitimately appear inside braces as
+    # \begin{tikzpicture}, so scanning for them bare cries wolf.  A mangled
+    # environment loses the backslash off \begin, which the ENV pattern below
+    # catches instead.
+    STEMS = ('newpage', 'clearpage', 'noindent', 'medskip', 'smallskip',
+             'bigskip', 'adjustbox', 'includegraphics', 'usepackage',
+             'definecolor', 'pgfmathsetmacro', 'usetikzlibrary', 'marginnote',
+             'toprule', 'bottomrule', 'textbf', 'textit')
+    # Two patterns only, both precise.  "page" and "note" are English words, so
+    # scanning every tail of a stem cries wolf; scanning the bare stem and the
+    # stem minus its first letter does not, because the mangling that happens
+    # eats exactly one leading character -- Python reads the "\n" of "\newpage"
+    # as a newline and leaves "ewpage".  Every stem below starts with a letter
+    # that is a Python string escape (n, t, b, a, u, m, c, i, d, p, s, f), so
+    # stem[1:] is the form the defect actually produces, and none of those tails
+    # is an English word.
+    naked = []
+    for i, line in enumerate(body.split('\n')):
+        if line.lstrip().startswith('%'):
+            continue
+        for stem in STEMS:
+            for form in (stem, stem[1:]):
+                if re.search(r'(?<![\\A-Za-z{])%s(?![A-Za-z])' % form, line):
+                    naked.append((i + 1, form))
+        if re.search(r'(?<![\\A-Za-z])(egin|nd)\{', line):
+            naked.append((i + 1, 'begin/end missing its backslash'))
+    if naked:
+        fails.append('C6: control word missing its backslash: %s' % naked[:5])
     return fails
 
 
