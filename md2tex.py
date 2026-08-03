@@ -27,6 +27,11 @@ OUT = os.path.join(HERE, 'src', 'body.tex')
 MATH = '\x01MATH%d\x01'
 RAW = '\x02RAW%d\x02'
 ROWS_PER_CHUNK = 9           # T1: budget so a chunk also fits under a heading
+CHARS_PER_CHUNK = 2400       # T1 again: a ROW COUNT cannot bound a chunk's HEIGHT.
+                             # Part A's receipt cells run from 100 to 900 characters,
+                             # so 9 of the long ones overflow the page and push the
+                             # footer off it (gates: footer sequence, envelope, vbox).
+                             # Chunk on whichever limit binds first.
 
 
 def protect(text, store_math, store_raw):
@@ -79,6 +84,27 @@ def inline(text):
     return text
 
 
+def chunks(body):
+    """Split rows so a chunk is bounded in BOTH rows and characters (T1).
+
+    tabularx cannot break across pages, so an over-tall chunk does not wrap --
+    it overruns the bottom margin, taking the page footer with it.  Row count
+    alone stopped being a proxy for height once the Part A receipts began
+    disclosing their parameters.
+    """
+    out, cur, size = [], [], 0
+    for row in body:
+        n = sum(len(c) for c in row)
+        if cur and (len(cur) >= ROWS_PER_CHUNK or size + n > CHARS_PER_CHUNK):
+            out.append(cur)
+            cur, size = [], 0
+        cur.append(row)
+        size += n
+    if cur:
+        out.append(cur)
+    return out
+
+
 def restore(text, store_math, store_raw):
     for i, m in enumerate(store_math):
         text = text.replace(MATH % i, m)
@@ -103,8 +129,7 @@ def table_block(rows):
                           for i in range(ncol))
     small = ncol >= 5
     out = []
-    for start in range(0, len(body), ROWS_PER_CHUNK):
-        chunk = body[start:start + ROWS_PER_CHUNK]
+    for chunk in chunks(body):
         if small:
             out.append(r'{\scriptsize\setlength{\tabcolsep}{3pt}')
         out.append(r'\noindent')                                   # C5
