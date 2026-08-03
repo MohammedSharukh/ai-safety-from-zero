@@ -115,7 +115,8 @@ def run_latex(passes=3):
     log = ''
     for k in range(passes):
         p = subprocess.run(['xelatex', '-interaction=nonstopmode', 'main.tex'],
-                           cwd=SRCDIR, capture_output=True, text=True, timeout=900)
+                           cwd=SRCDIR, capture_output=True, text=True,
+                           encoding='utf-8', errors='replace', timeout=900)
         log = p.stdout
     return log
 
@@ -125,7 +126,8 @@ def main():
     # source change could silently fail to reach the PDF -- which is exactly what
     # happened once, and was caught only by a content gate on the rendered text.
     rc = subprocess.run([sys.executable, os.path.join(HERE, 'md2tex.py')],
-                        cwd=HERE, capture_output=True, text=True)
+                        cwd=HERE, capture_output=True, text=True,
+                           encoding='utf-8', errors='replace')
     print(rc.stdout.strip() or rc.stderr.strip())
     if rc.returncode != 0:
         return 1
@@ -146,13 +148,15 @@ def main():
         os.remove(stale)
     rr = subprocess.run(['pdftoppm', '-png', '-r', '100', pdf,
                          os.path.join(pagedir, 'p')],
-                        capture_output=True, text=True)
+                        capture_output=True, text=True,
+                           encoding='utf-8', errors='replace')
     if rr.returncode != 0:
         print('WARNING: pdftoppm failed; the two pixel gates cannot run')
     else:
         print('rendered %d page rasters at 100 dpi'
               % len(glob.glob(os.path.join(pagedir, 'p-*.png'))))
-    pages = subprocess.run(['pdfinfo', pdf], capture_output=True, text=True)
+    pages = subprocess.run(['pdfinfo', pdf], capture_output=True, text=True,
+                           encoding='utf-8', errors='replace')
     m = re.search(r'Pages:\s+(\d+)', pages.stdout)
     print('main.pdf built: %d bytes, %s pages' % (os.path.getsize(pdf),
                                                   m.group(1) if m else '?'))
