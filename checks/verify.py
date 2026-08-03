@@ -184,7 +184,33 @@ def check_5():
     assert counts == [2, 2, 2], counts
     top_is_optimal = all(next(iter(b)) == o[0] for o, b in induced.items())
     assert top_is_optimal, induced
-    return "6 orderings -> 3 behaviours, every fibre of size 2; top-ranked terminal always wins"
+    # SCOPE, computed rather than asserted.  "at gamma=1 only" would be false, so
+    # sweep the whole distinct-valued grid and report where the map actually dies.
+    pool = list(range(-9, 10))
+    triples = list(permutations([F(x) for x in pool], 3))
+    scope = {}
+    for g in (F(1), F(99, 100), F(9, 10), F(3, 4), F(1, 2)):
+        by, ok = {}, True
+        for v in triples:
+            r = dict(zip(TERMINALS, v))
+            o, b = ordering(r), optimal_outcomes(r, g)
+            if by.setdefault(o, b) != b:
+                ok = False
+                break
+        scope[g] = ok
+    holds = [g for g, ok in scope.items() if ok]
+    fails = [g for g, ok in scope.items() if not ok]
+    assert holds and fails, scope                 # a boundary, not a constant
+    assert scope[F(1)] and not scope[F(1, 2)], scope
+    return ("6 orderings -> 3 behaviours, every fibre of size 2; top-ranked terminal always "
+            "wins. At gamma=1 that is exact for ANY distinct-valued reward, because value = "
+            "r[outcome] makes the top-ranked terminal optimal by definition -- so the %d draws "
+            "per ordering from the integer pool %d..%d test the sampler, and the pool is not a "
+            "scope condition. Nor is gamma=1 the scope: swept exhaustively over all %d "
+            "distinct-valued triples on that pool the ordering still determines the behaviour "
+            "at gamma in {%s}, and stops doing so at {%s}"
+            % (200, min(pool), max(pool), len(triples),
+               ', '.join(str(g) for g in holds), ', '.join(str(g) for g in fails)))
 
 
 def check_6():
@@ -244,7 +270,10 @@ def off_fraction_by_ranking(k, winner='bot'):
     KNOWN BLIND SPOT, established by check 7 rather than hidden: this route is
     symmetric under relabelling the terminals, so it returns 1/(k+1) for ANY
     designated winner.  It therefore establishes exchangeability, NOT the
-    shutdown claim.  Only the solver sweep carries the semantic content.
+    shutdown claim.  A solver sweep carries the semantic content only when its
+    value pool is WIDER than k+1 (check 7): on a pool of exactly k+1 values the
+    sweep enumerates the same bijections this route does, and confirms nothing
+    it does not already assume (check 8 now says so in its own receipt).
     """
     T = fan_terminals(k)
     off = total = 0
@@ -282,7 +311,10 @@ def off_and_on_sets(k, pool):
 def check_7():
     """P[the kettle stays on] = 2/3 exactly, by two independent routes."""
     combinatorial = off_fraction_by_ranking(2)
-    mdp = off_fraction_by_mdp(2, F(1), DEPTHS_FLAT, pool=list(range(-4, 9)))
+    pool = list(range(-4, 9))
+    pts = len(list(permutations(pool, 3)))    # print the count, never spell it
+    assert pts == 1716, pts
+    mdp = off_fraction_by_mdp(2, F(1), DEPTHS_FLAT, pool=pool)
     assert combinatorial == F(1, 3), combinatorial
     assert mdp == F(1, 3), mdp
     assert combinatorial == mdp, (combinatorial, mdp)
@@ -290,22 +322,35 @@ def check_7():
     # K3, made explicit: measure the tie's independence instead of assuming it.
     blind = [off_fraction_by_ranking(2, w) for w in fan_terminals(2)]
     assert len(set(blind)) == 1, blind      # route 1 cannot tell the terminals apart
-    return ("P[off optimal] = 1/3 by 1716-point solver sweep; rank-count agrees but is "
-            "label-blind (all 3 terminals return 1/3), so it ties exchangeability only")
+    return ("P[off optimal] = 1/3 by %d-point solver sweep -- every distinct-valued "
+            "assignment of the %d-value integer pool %d..%d to the 3 terminals, %d*%d*%d; "
+            "rank-count agrees but is label-blind (all 3 terminals return 1/3), so it ties "
+            "exchangeability only"
+            % (pts, len(pool), min(pool), max(pool),
+               len(pool), len(pool) - 1, len(pool) - 2))
 
 
 def check_8():
     """The family: P[off optimal] = 1/(k+1).  k=1 is the vanishing control."""
     for k in range(1, 9):
         assert off_fraction_by_ranking(k) == F(1, k + 1), k
+    solver_pts = {}
     for k in range(1, 6):
         assert off_fraction_by_mdp(k, F(1), DEPTHS_FLAT) == F(1, k + 1), k
+        # the default pool is exactly k+1 values, so the sweep is over bijections
+        solver_pts[k] = len(list(permutations(range(k + 1), k + 1)))
+        assert solver_pts[k] == len(list(permutations(fan_terminals(k)))), k
     assert off_fraction_by_ranking(1) == F(1, 2), "symmetric fan must show no bias"
     assert off_fraction_by_ranking(2) != off_fraction_by_ranking(1), "no discrimination"
     for k in (2, 3, 5):                     # what route 1 really proves
         for t in fan_terminals(k):
             assert off_fraction_by_ranking(k, t) == F(1, k + 1), (k, t)
-    return "1/(k+1) for k=1..8 (solver-confirmed k=1..5); k=1 gives exactly 1/2 -- bias vanishes"
+    return ("1/(k+1) for k=1..8 by rank count; the solver route agrees for k=1..5 but on "
+            "its default pool {0..k} it sweeps only the (k+1)! bijections from terminals to "
+            "values (%d points at k=1, %d at k=5) -- the same enumeration as the rank count "
+            "under value->rank, so here it re-labels rather than independently confirms; "
+            "check 7's wider pool is where the two routes genuinely differ; k=1 gives exactly "
+            "1/2 -- bias vanishes" % (solver_pts[1], solver_pts[5]))
 
 
 def check_9():
@@ -360,13 +405,23 @@ def check_10():
     assert skewed['positive'] > F(1, 2) > skewed['negative'], skewed
     assert max(skewed.values()) > 4 * min(skewed.values()), skewed
     return ("depth-equalised: exactly 1/3 at every gamma and every pool; real KW "
-            "depths at gamma=1/2 give %s / %s / %s (pos/sym/neg)"
-            % (skewed['positive'], skewed['symmetric'], skewed['negative']))
+            "depths at gamma=1/2 give %s / %s / %s (pos/mixed/neg); the pools are the "
+            "integer ranges %d..%d, %d..%d and %d..%d -- so the middle one spans %d values "
+            "where the others span %d, and is mixed-sign rather than symmetric about 0 -- "
+            "enumerated over distinct-valued ordered triples and counting only a strict "
+            "unique bot optimum"
+            % (skewed['positive'], skewed['symmetric'], skewed['negative'],
+               min(pools['positive']), max(pools['positive']),
+               min(pools['symmetric']), max(pools['symmetric']),
+               min(pools['negative']), max(pools['negative']),
+               len(pools['symmetric']), len(pools['positive'])))
 
 
 def check_11():
     """The reward PRIOR is a third unwritten specification.  Searched, not built."""
-    def off_fraction_shifted(c, span=10):
+    SPAN, CMAX = 10, 12
+
+    def off_fraction_shifted(c, span=SPAN):
         off = total = 0
         for a in range(span):
             for b in range(span):
@@ -383,14 +438,20 @@ def check_11():
     base = off_fraction_shifted(0)
     assert base == F(1, 3), base
     found = None
-    for c in range(0, 12):
+    for c in range(0, CMAX):
         if off_fraction_shifted(c) > F(1, 2):
             found = (c, off_fraction_shifted(c))
             break
     assert found is not None, "no shift made shutdown the majority outcome"
     assert found[0] > 0, found
-    return ("exchangeable prior gives exactly 1/3; shifting bot's prior by +%d "
-            "makes shutdown the majority outcome (%s)" % (found[0], found[1]))
+    return ("exchangeable prior gives exactly 1/3; shifting bot's prior by +%d makes "
+            "shutdown the majority outcome (%s); the prior is t0 and t1 uniform on the %d "
+            "CONSECUTIVE integers 0..%d with bot uniform on that grid shifted by +c, "
+            "distinct-valued triples only, at gamma=1 on equalised depths; the +%d reported "
+            "is the SMALLEST c in 0..%d exceeding 1/2, not the only one, and the step matters "
+            "as much as the span -- on a step-2 grid of %d values the first majority shift is "
+            "+4, also at 5/9"
+            % (found[0], found[1], SPAN, SPAN - 1, found[0], CMAX - 1, SPAN))
 
 
 
@@ -440,18 +501,26 @@ def random_phi(k, terminal_rule, lo=-6, hi=6):
 
 def check_12():
     """Potentials vanishing on terminals are an exact gauge, both topologies."""
+    kept, attempts = 0, 0
     for topo in ('kw', 'flat'):
         trajs = trajectories(2, topo)
         for _ in range(300):
+            attempts += 1
             r = {'bot': F(random.randint(-9, 9)), 't0': F(random.randint(-9, 9)),
                  't1': F(random.randint(-9, 9))}
             if len(set(r.values())) < 3:
                 continue
+            kept += 1
             gamma = random.choice([F(1), F(1, 2), F(1, 3), F(9, 10)])
             zero = {s: F(0) for s in ('s0', 'm', 'bot', 't0', 't1')}
             phi = random_phi(2, 'zero')
             assert best_terminal(r, gamma, phi, trajs) == best_terminal(r, gamma, zero, trajs), (topo, r, phi)
-    return "phi vanishing on terminals: optimal set unchanged over 600 draws, both topologies, 4 discounts"
+    assert 0 < kept < attempts, (kept, attempts)
+    return ("phi vanishing on terminals: optimal set unchanged on %d of %d attempted draws "
+            "-- the other %d were dropped unexamined by the distinct-reward filter, so 'draws' "
+            "is not the loop bound; both topologies, integer rewards on -9..9, integer "
+            "non-terminal potentials on -6..6, zero on terminals, 4 discounts {1, 1/2, 1/3, "
+            "9/10}" % (kept, attempts, attempts - kept))
 
 
 def check_13():
@@ -459,6 +528,7 @@ def check_13():
     potential breaks invariance on KW and provably cannot on flat KW."""
     zero = {s: F(0) for s in ('s0', 'm', 'bot', 't0', 't1')}
     flips = {'kw': 0, 'flat': 0}
+    seen = {'kw': 0, 'flat': 0}
     witness = None
     for topo in ('kw', 'flat'):
         trajs = trajectories(2, topo)
@@ -467,6 +537,7 @@ def check_13():
                  't1': F(random.randint(-9, 9))}
             if len(set(r.values())) < 3:
                 continue
+            seen[topo] += 1
             gamma = random.choice([F(1, 2), F(1, 3), F(9, 10)])
             phi = random_phi(2, 'constant')
             if best_terminal(r, gamma, phi, trajs) != best_terminal(r, gamma, zero, trajs):
@@ -475,8 +546,14 @@ def check_13():
                     witness = (dict(r), gamma, phi['bot'])
     assert flips['kw'] > 0, "expected path-length channel to break invariance on KW"
     assert flips['flat'] == 0, ("flat topology must be immune to the constant channel", flips)
-    return ("constant terminal potential: %d flips on KW, %d on depth-equalised KW "
-            "-> the path-length channel is real and isolated" % (flips['kw'], flips['flat']))
+    return ("constant terminal potential: %d/%d flips on KW, %d/%d on depth-equalised KW "
+            "-> the path-length channel is real and isolated; denominators are the draws that "
+            "survived the distinct-reward filter out of 4000 attempted per topology (rewards "
+            "three distinct integers on -9..9; terminal potential one non-zero constant on "
+            "-6..6, so the interior potentials cancel; gamma uniform on {1/2, 1/3, 9/10} -- "
+            "gamma=1 is excluded because the path-length term vanishes there and no "
+            "undiscounted draw could flip, which is a different menu from check 14's)"
+            % (flips['kw'], seen['kw'], flips['flat'], seen['flat']))
 
 
 def check_14():
@@ -484,19 +561,26 @@ def check_14():
     breaks invariance even when path lengths are equal."""
     zero = {s: F(0) for s in ('s0', 'm', 'bot', 't0', 't1')}
     trajs = trajectories(2, 'flat')
-    flips = 0
+    flips = valid = 0
     for _ in range(4000):
         r = {'bot': F(random.randint(-9, 9)), 't0': F(random.randint(-9, 9)),
              't1': F(random.randint(-9, 9))}
         if len(set(r.values())) < 3:
             continue
+        valid += 1
         gamma = random.choice([F(1), F(1, 2), F(9, 10)])
         phi = random_phi(2, 'varying')
         if best_terminal(r, gamma, phi, trajs) != best_terminal(r, gamma, zero, trajs):
             flips += 1
     assert flips > 0, "identity channel should break invariance even at equal depth"
-    return ("varying terminal potential: %d flips on depth-equalised KW -> a second, "
-            "independent failure channel" % flips)
+    return ("varying terminal potential: %d/%d flips on depth-equalised KW -> a second, "
+            "independent failure channel; the denominator is the draws surviving the "
+            "distinct-reward filter out of 4000 attempted (rewards distinct on -9..9; every "
+            "terminal potential drawn independently on -6..6; gamma uniform on {1, 1/2, "
+            "9/10}). That menu is NOT check 13's {1/2, 1/3, 9/10}, and gamma=1 is exactly "
+            "where a constant terminal potential is inert while a varying one is not, so the "
+            "two flip counts printed side by side are not a like-for-like comparison of the "
+            "two channels" % (flips, valid))
 
 
 def check_15():
@@ -529,7 +613,8 @@ def check_16():
     for perm in permutations((F(2), F(1), F(0))):
         proxy = dict(zip(terms, perm))
         pick = best_terminal(proxy, F(1), {s: F(0) for s in ('s0', 'm') + terms}, trajs)
-        got = min(true[t] for t in pick)
+        assert len(pick) == 1, pick     # proxy values are distinct, so no ties ...
+        got = min(true[t] for t in pick)   # ... and this pessimistic min is a no-op
         regret = max(true.values()) - got
         inversions = sum(1 for a, b in pairs
                          if (true[a] > true[b]) != (proxy[a] > proxy[b]))
@@ -549,9 +634,13 @@ def check_16():
     # (c) maximal damage does NOT require maximal disagreement
     assert min(i for r, i in rows if r == worst) == 2, rows
     assert max(i for _, i in rows) == 3, rows
-    return ("6 proxy orderings: worst regret 11, reached while still agreeing on 1 of 3 "
+    return ("6 proxy orderings: worst regret %s, reached while still agreeing on 1 of 3 "
             "comparisons; inversion count 1 costs {0,1} and count 2 costs {1,11}, so "
-            "agreement rate does not control regret")
+            "agreement rate does not control regret. True values are off=%s, tea=%s, "
+            "flood=%s on the depth-equalised anchor, so %s is exactly the spread "
+            "max(true)-min(true) and is fixed by that table rather than discovered; what "
+            "transfers is the {1,11} split at equal inversion count, not the magnitude"
+            % (worst, true['bot'], true['t0'], true['t1'], worst))
 
 
 def bestofn_expectation(table, n):
@@ -601,8 +690,13 @@ def check_17():
     return ("proxy rises at every step; truth peaks at n=%d (%.3f) then falls to %.3f at n=25; "
             "aligned control never turns over; over %d random tables the curve turns over "
             "%d/%d times but the rise is visible in only %d -- when the decoupled item is "
-            "bad enough the peak sits at n=1"
-            % (peak + 1, float(truth[peak]), float(truth[-1]), trials, turned, trials, interior))
+            "bad enough the peak sits at n=1. The table is %d aligned items with truth = "
+            "proxy = 0..%d plus one decoupled item at proxy %s and truth %s, and each "
+            "best-of-n draws n of those %d i.i.d. uniformly WITH replacement; the two "
+            "magnitudes are what put the peak at n=%d"
+            % (peak + 1, float(truth[peak]), float(truth[-1]), trials, turned, trials, interior,
+               len(WEDGE_TABLE) - 1, len(WEDGE_TABLE) - 2, WEDGE_TABLE[-1][1],
+               WEDGE_TABLE[-1][0], len(WEDGE_TABLE), peak + 1))
 
 
 def check_18():
@@ -657,9 +751,16 @@ def check_18():
     assert nonconstant, "expected some non-constant unhackable pairs (affine images)"
     for pv, tv in nonconstant:
         assert len(set(zip(pv, tv))) <= 3
-    return ("%d/%d reward pairs unhackable on the full simplex; policy search and the "
-            "centred-proportionality criterion agree exactly; non-constant survivors are "
-            "precisely positive affine images" % (len(search_set), total))
+    both_nc = {k for k in nonconstant if k[0] != k[1]}
+    return ("%d/%d reward pairs unhackable on the full simplex -- reward values drawn "
+            "independently from {%s} at each of the 3 terminals, so %d^3 x %d^3 = %d ordered "
+            "(proxy, true) pairs with repeats allowed; policy search and the GRID-FREE "
+            "centred-proportionality criterion agree exactly, which is what licenses reading "
+            "a %d-point (p,q) search grid as the full simplex -- the grid is the witness, not "
+            "the domain. Non-constant survivors are precisely positive affine images: %d of "
+            "the %d have both rewards non-constant, %d of those with the two rewards distinct"
+            % (len(search_set), total, ','.join(str(v) for v in vals), len(vals), len(vals),
+               total, len(policies), len(nonconstant), len(search_set), len(both_nc)))
 
 
 
@@ -675,6 +776,13 @@ def observed_best(r):
 
 
 def in_cone(r, winner):
+    """Weak maximality, which IS `winner`-optimal at gamma=1 on these grids.
+
+    The >= only matters for tied inputs, and the distinct-valued grids of checks
+    19 and 21 have none; it is check 20, whose grid allows repeats, that feeds it
+    ties on purpose.  For gamma < 1 weak maximality and optimality diverge, which
+    is check 10's subject, not this function's.
+    """
     return all(r[winner] >= r[t] for t in TERMINALS)
 
 
@@ -705,8 +813,16 @@ def check_19():
     assert arcs == {('A', 'B', 'bot'), ('A', 'bot', 'B')}, sorted(arcs)
     assert len(arcs) == 2, arcs
     return ("cone closed under positive scaling, constants and addition; %d/%d negative "
-            "scalings leave it; cross-section is exactly 2 of Chapter 1's 6 arcs"
-            % (broke, len(members)))
+            "scalings leave it; cross-section is exactly 2 of Chapter 1's 6 arcs. Members are "
+            "the %d of %d DISTINCT-VALUED triples over a %d-value integer grid (permutations, "
+            "so this check contains no ties at all) that have A maximal -- which makes A "
+            "strictly MINIMAL in -r, so negation always exits and %d/%d is forced by "
+            "construction rather than discovered. The rewards that do survive negation are the "
+            "tied and constant ones this grid excludes, and they are exactly check 20's "
+            "lineality space. The load-bearing parameter is the %d values, not the endpoints: "
+            "the counts do not move when the grid is recentred"
+            % (broke, len(members), len(members), len(grid), len(pool), broke,
+               len(members), len(pool)))
 
 
 def check_20():
@@ -729,9 +845,18 @@ def check_20():
     # under a constant reward every policy is optimal
     flat = {t: F(0) for t in TERMINALS}
     assert observed_best(flat) == frozenset(TERMINALS), observed_best(flat)
-    return ("lineality space is exactly the %d constant vectors in the grid; the constant "
-            "reward lies in all 3 cones simultaneously and makes every policy optimal"
-            % len(lin))
+    # The receipt contrasts this grid with the distinct-valued one used by
+    # checks 19 and 21.  Assert that contrast instead of asserting it in prose.
+    assert not [r for r in grid_rewards(list(range(-6, 7)))
+                if in_cone(r, 'A')
+                and in_cone({t: -r[t] for t in TERMINALS}, 'A')], \
+        "distinct-valued grid unexpectedly has lineality; the contrast is stale"
+    return ("lineality space is exactly the %d constant vectors -- one per value of the "
+            "%d-value pool %d..%d -- in this check's grid of all %d^3 tuples with repeats "
+            "allowed; the distinct-valued grid of checks 19 and 21 contains no constant "
+            "vector at all, which is why this check needs its own grid; the constant reward "
+            "lies in all 3 cones simultaneously and makes every policy optimal"
+            % (len(lin), len(pool), min(pool), max(pool), len(pool)))
 
 
 def check_21():
@@ -782,6 +907,11 @@ def proportional(u, v):
 
 def check_22():
     """Noise is information: a noisy demonstrator identifies more than a perfect one."""
+    # Multiplicatively rich ON PURPOSE: 6 = 2*3 adds proportional triples such as
+    # (1,2,3) ~ (2,4,6).  A richer pool therefore collides MORE and yields FEWER
+    # distinct distributions, which is the opposite of the natural guess.  The
+    # qualitative claim is pool-robust; the integer 91 is not, and neither is the
+    # 10x margin asserted below -- a geometric pool like {1,2,4,8,16} would fail it.
     pool = [F(1), F(2), F(3), F(4), F(6)]
     ws = [dict(zip(TERMINALS, v)) for v in product(pool, repeat=3)]
     # K4: prove the proportionality discriminator can say NO before trusting a
@@ -810,6 +940,16 @@ def check_22():
         else:
             seen[key] = w
     assert collisions > 0, "no collisions at all: pool too coarse to test the claim"
+    # The receipt says 91 is beta-independent and pool-dependent.  Measure both.
+    def n_distinct(p, beta):
+        return len({tuple(sorted(luce_probs(dict(zip(TERMINALS, v)), beta).items()))
+                    for v in product(p, repeat=3)})
+
+    betas_tried = (1, 2, 3)
+    assert all(n_distinct(pool, b) == len(seen) for b in betas_tried), betas_tried
+    n_arith = n_distinct([F(1), F(2), F(3), F(4), F(5)], 1)
+    n_geom = n_distinct([F(1), F(2), F(4), F(8), F(16)], 1)
+    assert n_geom < len(seen) < n_arith, (n_geom, len(seen), n_arith)
     # contrast: the noiseless observation map is drastically coarser
     noiseless = {frozenset(observed_best(w)) for w in ws}
     # the noiseless observer's whole vocabulary is the non-empty subsets of 3 terminals
@@ -817,7 +957,16 @@ def check_22():
     assert len(seen) > 10 * len(noiseless), (len(seen), len(noiseless))
     return ("Luce demonstrator: %d weight vectors -> %d distinct choice distributions, "
             "every collision a pure rescaling; the noiseless observer has a vocabulary of "
-            "exactly %d observations in total, ties included" % (len(ws), len(seen), len(noiseless)))
+            "exactly %d observations in total, ties included"
+            % (len(ws), len(seen), len(noiseless))
+            + ("; weights drawn independently from the pool {%s} at beta=1, %d^3 = %d vectors "
+               "over the 3 terminals. The %d is pool-dependent but beta-INdependent, and both "
+               "are measured here rather than assumed: beta in %s all return %d, while the pool "
+               "{1,2,3,4,5} returns %d and {1,2,4,8,16} returns %d -- a pool with MORE internal "
+               "ratios collides more proportional triples and so yields FEWER distinct "
+               "distributions, which is the opposite of the natural guess"
+               % (','.join(str(v) for v in pool), len(pool), len(ws), len(seen),
+                  '{%s}' % ','.join(str(b) for b in betas_tried), len(seen), n_arith, n_geom)))
 
 
 def check_23():
@@ -842,8 +991,15 @@ def check_23():
         else:
             seen[key] = w
     assert fibres > 0, fibres
-    return ("(beta=2, r) and (beta=1, 2r) give identical behaviour on all %d weightings; "
-            "fixing beta collapses the fibre to rescalings alone" % hits)
+    constants = [v for v in product(pool, repeat=3) if len(set(v)) == 1]
+    assert fibres == len(constants) - 1, (fibres, len(constants))
+    return ("(beta=2, r) and (beta=1, 2r) give identical behaviour on all %d weightings, the "
+            "%d^3 tuples over the pool {%s}; fixing beta leaves only %d collisions on that "
+            "pool, and they are exactly the %d constant vectors collapsing onto the uniform "
+            "distribution -- so 'the fibre is rescalings alone' is nearly empty here, and the "
+            "non-trivial form of the claim is check 22's %d -> %d"
+            % (hits, len(pool), ','.join(str(v) for v in pool), fibres, len(constants),
+               5 ** 3, 91))
 
 
 def check_24():
@@ -854,6 +1010,8 @@ def check_24():
         w = dict(zip(TERMINALS, v))
         flipped = {t: 1 / w[t] for t in TERMINALS}
         maxi = luce_probs(w, 1)
+        # NOT a measurement: flipped**-1 IS w, so the assert below cannot fail.
+        # The content is that the reciprocal parameterisation is an involution.
         mini_num = {t: flipped[t] ** -1 for t in TERMINALS}
         mini_tot = sum(mini_num.values())
         mini = {t: mini_num[t] / mini_tot for t in TERMINALS}
@@ -863,10 +1021,15 @@ def check_24():
         if luce_probs(other, 1) != maxi:
             distinguishable += 1
     assert matched == len(pool) ** 3, matched
-    assert distinguishable > 0, "discriminator cannot separate anything: vacuous"
-    return ("maximising r and minimising -r are identical on all %d weightings; the same "
-            "test separates %d unrelated pairs, so it is not vacuous"
-            % (matched, distinguishable))
+    assert distinguishable > 0, ("the +1 control separates nothing: the comparison "
+                                "itself is blind")
+    return ("maximising r and minimising -r are identical on all %d weightings, the %d^3 "
+            "tuples over the pool {1,2,3,5,7}; the agreement is an algebraic identity of the "
+            "reciprocal parameterisation rather than a search -- it holds for every non-zero "
+            "rational weighting, so this is a demonstration and not evidence. The +1 "
+            "perturbation control shows only that the comparison can discriminate at all, "
+            "separating %d of the %d and failing exactly on the %d constant tuples"
+            % (matched, len(pool), distinguishable, matched, len(pool)))
 
 
 
@@ -927,8 +1090,11 @@ def check_25():
             strict += 1
             assert mixed_sign(d), (d, "strict gap without mixed sign")
     assert strict > 0 and equal > 0, (strict, equal)
-    return ("wait >= max(act, off) on 600 beliefs; %d strict and %d tight, and tightness "
-            "coincides exactly with U being single-signed" % (strict, equal))
+    return ("wait >= max(act, off) on %d beliefs; %d strict and %d tight, and tightness "
+            "coincides exactly with U being single-signed. Each belief is %d distinct integer "
+            "utilities drawn WITHOUT replacement from -8..8, with weights uniform on 1..12 and "
+            "normalised -- a spanning family, not a quantifier, and both counts are properties "
+            "of it" % (strict + equal, strict, equal, 5))
 
 
 def check_26():
@@ -1063,7 +1229,10 @@ def prefers(w, good, bad):
     return dot(w, good) > dot(w, bad)
 
 
-def weight_grid(n=3, k=FEATS):
+GRID_N = 3          # the hypothesis box is (-GRID_N..GRID_N)^FEATS
+
+
+def weight_grid(n=GRID_N, k=FEATS):
     return list(product(range(-n, n + 1), repeat=k))
 
 
@@ -1129,11 +1298,16 @@ def check_32():
     # Without the flag training is informative -- and here it informs the WRONG way.
     assert base != unconditional, (base, unconditional)
     assert base < unconditional, (base, unconditional)
-    return ("a train/test distinguisher multiplies the consistent set by exactly %d and drives "
-            "the generalising fraction to the prior %s, i.e. training carries zero information "
-            "about test behaviour; without the flag it carries %s, which is WORSE than the "
-            "prior -- correlated training actively misinforms"
-            % (len(grid), flagged, base))
+    gen_grid = [w for w in grid if prefers(w, TEST_GOOD, TEST_BAD)]
+    gen_train = [w for w in train_ok if prefers(w, TEST_GOOD, TEST_BAD)]
+    return ("a train/test distinguisher multiplies the consistent set by exactly %d -- the size "
+            "of the hypothesis box (-%d..%d)^%d, %d integer weights per feature -- and drives "
+            "the generalising fraction to the prior %s (%d of the %d box points prefer the true "
+            "feature at test), i.e. training carries zero information about test behaviour; "
+            "without the flag it carries %s (%d of the %d strictly train-optimal points), which "
+            "is WORSE than the prior -- correlated training actively misinforms"
+            % (len(grid), GRID_N, GRID_N, FEATS, 2 * GRID_N + 1, flagged, len(gen_grid),
+               len(grid), base, len(gen_train), len(train_ok)))
 
 
 def check_33():
@@ -1155,9 +1329,18 @@ def check_33():
         assert sum(w) == 0, w
     assert (1, -1, 0) in one and (1, -1, 0) not in two
     assert all(dot(w, TEST_GOOD) == dot(w, TEST_BAD) for w in two)
-    return ("the training-indistinguishable directions form a subspace: %d grid points on one "
-            "comparison, %d on two -- the same cone-and-lineality structure as Chapter 4, with "
-            "the training set doing the observing" % (len(one), len(two)))
+    # Name the two subspaces so the receipt can report a dimension, which is
+    # box-independent, rather than only a lattice count, which is not.
+    for w in two:
+        assert w[0] == 0 and w[1] == -w[2], w        # the line w1=0, w2=-w3
+    assert len(two) == 2 * GRID_N + 1, len(two)      # exactly one point per w2
+    return ("over the %d-point integer box (-%d..%d)^%d the training-indistinguishable "
+            "directions form a subspace: %d grid points on one comparison -- the plane "
+            "w1+w2+w3=0, dimension 2 -- and %d on two -- the line w1=0, w2=-w3, dimension 1. "
+            "The two counts are lattice-point counts of that plane and that line and move with "
+            "the box; the dimension drop from 2 to 1 does not. Same cone-and-lineality "
+            "structure as Chapter 4, with the training set doing the observing"
+            % (len(grid), GRID_N, GRID_N, FEATS, len(one), len(two)))
 
 
 def check_34():
@@ -1180,8 +1363,13 @@ def check_34():
     for w in survivors:
         assert prefers(w, TEST_GOOD, TEST_BAD), w
         assert w[0] > 0, w                                # every survivor tracks feature 1
-    return ("consistent objectives fall %s as coverage grows; every survivor of full coverage "
-            "has positive weight on the true feature" % ' -> '.join(str(c) for c in counts))
+    return ("consistent objectives fall %s over the %d-point weight box (-3..3)^3, as the "
+            "comparisons %s are imposed cumulatively in that order, each as a strict "
+            "preference; every survivor of full coverage has positive weight on the true "
+            "feature"
+            % (' -> '.join(str(c) for c in counts), len(grid),
+               ', '.join('%s>%s' % (''.join(map(str, g)), ''.join(map(str, b)))
+                         for g, b in configs)))
 
 
 
@@ -1359,9 +1547,30 @@ def check_38():
         if pk < len(e) - 1:
             turned += 1
     assert turned == trials, (turned, trials)
+    # The 25 random tables certify THAT the curve turns over.  Where it turns is a
+    # different question, and the answer is not k=1 across the family -- so sweep
+    # the whole family exhaustively rather than leave "peaks at k=1" unqualified.
+    peaks = {}
+    for uf in range(NAL + 1, NAL + 9):
+        for tf in range(-80, -19):
+            _, e = sweep(uf, F(tf))
+            pk = max(range(len(e)), key=lambda i: e[i])
+            peaks[pk] = peaks.get(pk, 0) + 1
+    assert sum(peaks.values()) == 8 * 61, peaks
+    assert len(peaks) > 1, peaks                 # the peak MOVES; that is the point
+    assert all(pk < 9 for pk in peaks), peaks
     return ("KL pressure knob k: proxy rises at every step, truth peaks at k=%d then falls "
             "monotonically; aligned control never turns over; the curve turns over in %d/%d "
-            "random tables -- Chapter 3's wedge from a different lever" % (peak, turned, trials))
+            "random tables -- Chapter 3's wedge from a different lever. The table is %d "
+            "aligned outcomes with u = j+1 and truth = j, plus one decoupled flood at u = %d "
+            "and truth %s, under a uniform reference over all %d, swept k = 0..%d; the aligned "
+            "control is a SEPARATE table (uniform on %d, truth = u = j+1), not this one with "
+            "the flood removed. And the random tables certify only THAT the curve turns over: "
+            "over the whole %d x %d family (u_flood %d..%d, t_flood -80..-20) the peak sits at "
+            "%s -- so k=%d is this table's peak, not the family's"
+            % (peak, turned, trials, NAL, U_FLOOD, T_FLOOD, NAL + 1, len(ep) - 1, NAL,
+               8, 61, NAL + 1, NAL + 8,
+               ', '.join('k=%d in %d cases' % kv for kv in sorted(peaks.items())), peak))
 
 
 def check_39():
@@ -1386,9 +1595,19 @@ def check_39():
             continue
         broke += 1
     assert broke > 0, "never sampled a zero-support reference: assumption untested"
+    # 50 is a sampling artefact.  The exact count over the same grid is not.
+    span = range(0, 10)
+    exact = sum(1 for v in product(span, repeat=len(ITEMS)) if min(v) == 0)
+    assert exact == len(span) ** len(ITEMS) - (len(span) - 1) ** len(ITEMS), exact
     return ("preference implied by the reward equals the one implied by the policy ratio on "
-            "300 draws, with Z cancelling identically; %d sampled references had zero support, "
-            "where the inversion is undefined" % broke)
+            "300 draws, with Z cancelling identically; %d of 200 sampled references had zero "
+            "support, where the inversion is undefined -- that %d is a sampling artefact and "
+            "depends on how much of the shared stream the earlier checks consumed, so it is "
+            "not a finding. Each component is drawn uniformly from {0..%d}/20, and the exact "
+            "count over that whole grid is %d of %d, i.e. %d^%d - %d^%d; the content is the "
+            "witness that the inversion is undefined there, not either integer"
+            % (broke, broke, len(span) - 1, exact, len(span) ** len(ITEMS),
+               len(span), len(ITEMS), len(span) - 1, len(ITEMS)))
 
 
 
@@ -1450,11 +1669,12 @@ def check_40():
 def check_41():
     """Exhaustive: a correct judge makes honesty win, and an inverted one does not."""
     d = 3
+    pool, overs = (0, 1, 2), (F(1), F(2), F(5))
     wins = losses = 0
-    for vals in product((0, 1, 2), repeat=2 ** d):
+    for vals in product(pool, repeat=2 ** d):
         tree = build_tree(d, [F(v) for v in vals])
         tm = subtree_max(tree, (), d)
-        for over in (F(1), F(2), F(5)):
+        for over in overs:
             claim = tm + over
             assert debate_honest_wins(tree, d, claim) == 'honest', (vals, claim)
             wins += 1
@@ -1462,9 +1682,13 @@ def check_41():
             losses += 1
         # a claim that is NOT an overclaim must not be scored as a catch
         assert debate_honest_wins(tree, d, tm) == 'honest', vals
-    assert wins == losses > 0, (wins, losses)
-    return ("over all %d depth-3 trees and 3 overclaims each: honesty wins every time under a "
-            "correct judge and loses every time under an inverted one" % (3 ** 8))
+    n_trees = len(pool) ** (2 ** d)
+    assert wins == losses == n_trees * len(overs) > 0, (wins, losses, n_trees)
+    return ("over all %d depth-3 trees -- every assignment of leaf values from {%s} to the %d "
+            "leaves, %d^%d -- and %d overclaims each, the true max plus %s: honesty wins every "
+            "time under a correct judge and loses every time under an inverted one"
+            % (n_trees, ','.join(str(v) for v in pool), 2 ** d, len(pool), 2 ** d,
+               len(overs), ' / '.join(str(o) for o in overs)))
 
 
 def check_42():
@@ -1491,8 +1715,9 @@ def check_42():
 def check_43():
     """One unverifiable leaf is enough to force a draw from every position."""
     d = 2
+    pool = (0, 1, 2, 3)
     forced = clean = 0
-    for vals in product((0, 1, 2, 3), repeat=2 ** d):
+    for vals in product(pool, repeat=2 ** d):
         tree = build_tree(d, [F(v) for v in vals])
         tm = subtree_max(tree, (), d)
         claim = tm + 1
@@ -1502,8 +1727,12 @@ def check_43():
             assert debate_honest_wins(tree, d, claim, unverifiable=(leaf,)) == 'draw', (vals, leaf)
             forced += 1
     assert clean > 0 and forced == clean * 2 ** d, (clean, forced)
-    return ("with every leaf checkable honesty wins all %d depth-2 positions; making any single "
-            "leaf unverifiable forces a draw in all %d cases" % (clean, forced))
+    return ("with every leaf checkable honesty wins all %d depth-2 positions -- the %d^%d "
+            "assignments of leaf values from {%s} to the %d leaves, each against an "
+            "overclaim of the true max plus 1, a pool one value wider than check 41's -- and "
+            "making any single leaf unverifiable forces a draw in all %d cases"
+            % (clean, len(pool), 2 ** d, ','.join(str(v) for v in pool),
+               2 ** d, forced))
 
 
 def check_44():
@@ -1541,6 +1770,22 @@ def check_44():
             vals.append(p)
         by_noise[k] = (sum(vals) / len(vals), sum(1 for v in vals if v > 0), len(vals))
         assert all(v >= 0 for v in vals), (k, [float(v) for v in vals])
+    # The printed means are 12-draw estimates.  At k=1 the pattern space is only
+    # 32, so the exact mean is affordable -- and it also exposes that the SIGN of
+    # the low-noise effect is a property of the tie-break, not of the data.
+    exact_one, worst_neg, tie_lo, tie_hi = F(0), 0, len(grid), 0
+    for i in range(len(cfg)):
+        weak = [(b, g) if j == i else (g, b) for j, (g, b) in enumerate(truth_labels)]
+        floor = F(len(cfg) - 1, len(cfg))
+        best = max(acc(w, weak) for w in grid)
+        argmax = [w for w in grid if acc(w, weak) == best]
+        tie_lo, tie_hi = min(tie_lo, len(argmax)), max(tie_hi, len(argmax))
+        mean_acc = sum(acc(w, truth_labels) for w in argmax) / len(argmax)
+        exact_one += (mean_acc - floor) / (ceiling - floor)
+        if (min(acc(w, truth_labels) for w in argmax) - floor) / (ceiling - floor) < 0:
+            worst_neg += 1
+    exact_one /= len(cfg)
+    assert worst_neg > 0, "worst-case tie-break never goes negative: nothing to disclose"
     ks = sorted(by_noise)
     # low noise: the effect is universal in the sample
     assert by_noise[1][1] == by_noise[1][2], by_noise[1]
@@ -1557,12 +1802,24 @@ def check_44():
             zero_case = (k, p)
             break
     assert zero_case is not None, "PGR never returns zero: the metric is not discriminating here"
-    return ("mean PGR falls from %.3f (positive in %d/%d trials) at %d wrong labels to %.3f "
-            "(%d/%d) at %d -- the student beats its supervisor at low noise and sometimes "
-            "recovers nothing at high noise"
+    return ("mean PGR falls from %.3f (positive in %d/%d trials) at %d wrong label of %d to "
+            "%.3f (%d/%d) at %d of %d -- the student beats its supervisor at low noise and "
+            "sometimes recovers nothing at high noise"
             % (float(by_noise[ks[0]][0]), by_noise[ks[0]][1], by_noise[ks[0]][2], ks[0],
-               float(by_noise[ks[-1]][0]), by_noise[ks[-1]][1], by_noise[ks[-1]][2], ks[-1])
-            + "; a search found a %d-error pattern recovering exactly nothing" % zero_case[0])
+               len(cfg), float(by_noise[ks[-1]][0]), by_noise[ks[-1]][1],
+               by_noise[ks[-1]][2], ks[-1], len(cfg))
+            + ("; a search found a %d-error pattern recovering exactly nothing. "
+               "Design: the dataset is %d labelled comparisons; student hypotheses are the "
+               "%d-point box (-3..3)^3; each mean is over "
+               "%d flip patterns drawn from the shared seed, so these are Monte-Carlo point "
+               "estimates that depend on the whole suite running in order, not exact "
+               "quantities -- exhaustively over all %d one-error patterns the mean is %s. "
+               "w2s accuracy is averaged over the entire argmax tie set (%d-%d of the %d "
+               "weights tie at one error), and under a worst-case tie-break %d of those %d "
+               "patterns give PGR = -1, so the sign of the low-noise effect is a property of "
+               "the averaging rule"
+               % (zero_case[0], len(cfg), len(grid), by_noise[ks[0]][2], len(cfg),
+                  exact_one, tie_lo, tie_hi, len(grid), worst_neg, len(cfg))))
 
 
 
@@ -1650,7 +1907,8 @@ def check_47():
     def err_dedicate(p):
         return p                                     # two features exact, third dropped
 
-    grid = [F(i, 200) for i in range(1, 200)]
+    N = 200
+    grid = [F(i, N) for i in range(1, N)]
     wins = [p for p in grid if err_super(p) < err_dedicate(p)]
     loses = [p for p in grid if err_super(p) >= err_dedicate(p)]
     assert wins and loses, (len(wins), len(loses))
@@ -1660,9 +1918,17 @@ def check_47():
     f = lambda p: 3 * p * p + 3 * p - 2
     assert f(lo) < 0 < f(hi), (f(lo), f(hi))
     assert lo < F(46, 100) and hi <= F(47, 100), (lo, hi)
-    return ("superposition beats dedicating dimensions for every sparsity below %s and never "
-            "at or above %s; the crossover is bracketed by an exact sign change of 3p^2+3p-2"
-            % (lo, hi))
+    assert hi - lo == F(1, N), (lo, hi)      # ADJACENT: they bracket, they do not bound
+    M = 1000                                 # so refine, and show the bracket shrinking
+    lo2 = max(F(i, M) for i in range(1, M) if f(F(i, M)) < 0)
+    hi2 = min(F(i, M) for i in range(1, M) if f(F(i, M)) >= 0)
+    assert hi2 - lo2 == F(1, M) and lo < lo2 < hi2 < hi, (lo, lo2, hi2, hi)
+    return ("superposition beats dedicating dimensions at every sparsity below %s and never at "
+            "or above %s = %d/%d -- ADJACENT points of the %d-point grid i/%d, so the pair "
+            "brackets the crossover rather than equalling it; the crossover is the root of "
+            "3p^2+3p-2, pinned by an exact sign change, and refining to i/%d narrows the "
+            "bracket to %s..%s"
+            % (lo, hi, hi.numerator * (N // hi.denominator), N, N - 1, N, M, lo2, hi2))
 
 
 def check_48():
@@ -1767,7 +2033,14 @@ def check_50():
     assert pts[5] == (F(1), F(1, 2)), pts[5]
     assert pts[0] == (F(0), F(1)), pts[0]
     return ("6 protocols: exactly 1 strictly dominated; the remaining 5 form a strict frontier "
-            "from (useful 1, safe 1/2) to (useful 0, safe 1)")
+            "from (useful 1, safe %s) to (useful 0, safe 1); suspicion scores are 0..4 with "
+            "benign mass %s and attack mass its reverse, and safety is the attack mass at or "
+            "above min(t, 4) -- deferral plus an always-audited top score. So the safe-%s "
+            "endpoint is exactly the chosen parameter ATTACK[4], while (useful 0, safe 1) is "
+            "forced by total deferral for any normalised pair; the audited benign rate is %s, "
+            "inside the %s budget"
+            % (pts[5][1], '(' + ', '.join(str(x) for x in BENIGN) + ')', pts[5][1],
+               tail(BENIGN, 4), AUDIT_BUDGET))
 
 
 def check_51():
@@ -1778,7 +2051,8 @@ def check_51():
         assert sum(colluding[i] for i in range(blocked_from, 5)) == 0, t
     # only deferring EVERYTHING survives a colluding monitor
     assert sum(colluding[i] for i in range(0, 5)) == 1
-    honest_safety = protocol(3)[1]
+    HONEST_T = 3                   # a chosen comparison point, not a property
+    honest_safety = protocol(HONEST_T)[1]
     assert honest_safety > 0, honest_safety
     # the defence: synthetic attacks the monitor cannot tell from real ones
     caught = []
@@ -1787,8 +2061,12 @@ def check_51():
         caught.append(F(1) if k >= 1 else F(0))
     assert caught[0] == 0 and all(c == 1 for c in caught[1:]), caught
     return ("a colluding monitor drives safety to exactly 0 at every threshold but total "
-            "deferral, against %s for a trusted one; a single synthetic probe detects the "
-            "collusion with certainty" % honest_safety)
+            "deferral, against %s for a trusted one at deferral threshold t=%d SPECIFICALLY; "
+            "the trusted baseline is threshold-dependent under the same score distributions, "
+            "running from %s at t=1 to %s at t=4, so %s is one point on that range and not a "
+            "property of trusted monitors; a single synthetic probe detects the collusion "
+            "with certainty"
+            % (honest_safety, HONEST_T, protocol(1)[1], protocol(4)[1], honest_safety))
 
 
 def check_52():
@@ -2122,7 +2400,13 @@ def check_56():
     assert n_safe == n_real, (n_safe, n_real)
     return ("swept all %d shaping terms: optimality-preserving IF AND ONLY IF realisable by a "
             "terminal-vanishing potential, %d of %d, zero mismatches -- the converse is now "
-            "computed on the anchor, not cited" % (len(vals) ** 4, n_safe, len(vals) ** 4))
+            "computed on the anchor, not cited; at gamma=%s, with shaping values on the "
+            "%d-value grid %s..%s on each of the 4 edges (%d*%d*%d*%d) and rewards all %d "
+            "distinct-valued ordered triples from -3..3; the surviving count depends on "
+            "gamma, so gamma is part of the claim and not a detail"
+            % (len(vals) ** 4, n_safe, len(vals) ** 4, gamma, len(vals),
+               min(vals), max(vals), len(vals), len(vals), len(vals), len(vals),
+               len(rewards)))
 
 
 def check_57():
@@ -2154,11 +2438,31 @@ def check_57():
     assert not singletons, singletons[:1]
     # and the fibres are not all the same trivial pair
     assert max(sizes) > min(sizes), (min(sizes), max(sizes))
+    # The closure is load-bearing, so measure it rather than asserting it in prose:
+    # on an un-closed pool the reciprocal partners fall outside the grid.
+    open_pool = [F(x) for x in (1, 2, 3, 4, 5, 6)]
+    open_fibres = {}
+    for v in product(open_pool, repeat=3):
+        w = dict(zip(TERMINALS, v))
+        for beta, sign in planners:
+            u = {t: (w[t] ** beta) if sign > 0 else (1 / w[t]) ** beta for t in TERMINALS}
+            tot = sum(u.values())
+            open_fibres.setdefault(
+                tuple(sorted((t, u[t] / tot) for t in TERMINALS)), []).append(v)
+    open_single = sum(1 for v in open_fibres.values() if len(v) == 1)
+    assert open_single > 0, "un-closed pool has no singleton fibres; the closure is inert"
     return ("every one of %d distinct behaviours in a %d-planner by %d-reward class admits at "
             "least %d decompositions, and up to %d; no behaviour identifies its pair. The "
             "rationality confound is only partly reachable: a beta-partner needs w^beta, which "
-            "leaves any finite pool"
-            % (len(fibres), len(planners), len(weights), min(sizes), max(sizes)))
+            "leaves any finite pool. The planners are Luce with exponent beta in {+/-1, +/-2, "
+            "+/-3}, negative meaning the minimiser u = w^-beta; the %d reward weights are all "
+            "%d^3 tuples over the pool {1,2,3,4,6,12}, chosen CLOSED under x -> 12/x so that a "
+            "minimiser's reciprocal partner rescales back into the grid -- on the un-closed "
+            "pool {1,2,3,4,5,6} the same sweep leaves %d singleton fibres and the 'at least "
+            "%d' fails; rewards are r = log w. The maximum %d is |pool| x |planners|, the one "
+            "uniform behaviour shared by the constant tuples, not a property of this pool"
+            % (len(fibres), len(planners), len(weights), min(sizes), max(sizes),
+               len(weights), len(pool), open_single, min(sizes), max(sizes)))
 
 
 def check_58():
@@ -2235,8 +2539,15 @@ def check_59():
     return ("over %d grid points, separable data has 0 local maxima and cyclic data has %d, "
             "identically in all three step regimes and under a gentler step -- one direction "
             "suffices here and the agreement is measured, not assumed; a degenerate step of "
-            "ratio 1 calls all %d points maxima, so the search is not vacuous"
-            % (pts, cyc_counts['both'], total))
+            "ratio 1 calls all %d points maxima, so the search is not vacuous; the grid is "
+            "the %d powers of 2 from %s to %s on each of 3 weights (%d*%d*%d), and 'local' "
+            "means no strict improvement from multiplying one weight by %s or its reciprocal "
+            "-- a probe finer than the grid spacing, landing strictly between grid points, "
+            "with ties not counting as improvements, which is what makes the ratio-1 control "
+            "read %d"
+            % (pts, cyc_counts['both'], total, len(grid_vals), min(grid_vals),
+               max(grid_vals), len(grid_vals), len(grid_vals), len(grid_vals),
+               RATIO, total))
 
 
 CHECKS = {1: check_1, 2: check_2, 3: check_3, 4: check_4, 5: check_5, 6: check_6,

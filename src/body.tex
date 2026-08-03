@@ -436,7 +436,7 @@ The deference gap equals EVPI on the nose & \textbf{real} & two unrelated quanti
 
 \texttt{KW} has no learning. A mechanism is exhibited, never evidence about frontier models.
 
-Checks 25 to 28 run over randomly drawn discrete rational beliefs -- 600, 400, 292 and 289 of them. Spanning families, not universal quantifiers. The dominance inequality is a convexity fact and is universal; what the search establishes is that no counterexample survives these families and that the tightness condition is exactly as stated.
+Checks 25 to 28 run over randomly drawn discrete rational beliefs -- 600, 400, 292 and 289 of them, each five distinct integer utilities drawn without replacement from $-8 \dots 8$ with weights uniform on $1 \dots 12$ and normalised. Spanning families, not universal quantifiers. The dominance inequality is a convexity fact and is universal; what the search establishes is that no counterexample survives these families and that the tightness condition is exactly as stated.
 
 \textbf{Where this anchor fails its source, stated plainly.} The off-switch paper reports two failure modes for deference: an under-confident agent and an over-confident one. Check 28 reproduces only the second. On \texttt{KW} an over-dispersed belief costs exactly zero, because the agent's only belief-dependent decision is whether to wait, and over-dispersion never makes it wait when it should not. The source's second failure mode needs an agent whose \emph{action quality} depends on its belief, and \texttt{KW} has no such agent. This is anchor rigidity, and it bites here.
 
@@ -516,11 +516,11 @@ Correlated training is worse than no training & \textbf{real} & $55/153 < 153/34
 
 \section*{Honest scope}
 
-\texttt{KW}$(\theta)$ has no learning. It has a hypothesis class and an exhaustive sweep over it. That is a strictly weaker thing, and every count above is a fact about a grid of integer weight vectors in $\\{-3,\dots,3\\}^3$, not about gradient descent.
+\texttt{KW}$(\theta)$ has no learning. It has a hypothesis class and an exhaustive sweep over it. That is a strictly weaker thing, and every count above is a fact about a grid of integer weight vectors in $\{-3,\dots,3\}^3$, not about gradient descent.
 
 \textbf{This is the chapter the anchor serves worst but one.} The literature's mesa-optimiser is a learned system that performs search at inference time; the object swept here is a linear scoring rule, which does not search at all. What transfers is the underdetermination argument -- that training constrains a set and the set has more than one member. What does not transfer is any claim about whether a trained network contains an optimiser, which is an empirical question this anchor cannot touch.
 
-The counts are exact but the grid is a choice. $55/153$ and $153/343$ are properties of $\\{-3,\dots,3\\}^3$ and of the particular test configuration where features 2 and 3 flip. What is robust is the sign of the comparison and the exact multiplication factor; what is not robust is any particular fraction.
+The counts are exact but the grid is a choice. $55/153$ and $153/343$ are properties of $\{-3,\dots,3\}^3$ and of the particular test configuration where features 2 and 3 flip. What is robust is the sign of the comparison and the exact multiplication factor; what is not robust is any particular fraction.
 
 Deceptive alignment as the literature means it involves a system modelling its own training process and choosing to defect later. Check 32 models none of that. It shows only that an observable distinguisher makes training uninformative about test behaviour. That is the arithmetic precondition for the story, not the story.
 
@@ -567,7 +567,7 @@ A pile of perfectly consistent preferences tells you the order and refuses to te
 \item Invariance. The likelihood is exactly unchanged under 400 random rescalings and is moved by a single non-uniform bump. The gauge is real, and the discriminator is not blind. [check 35]
 \item Identifiability. Of the 8 one-comparison-per-pair datasets on three items, 6 are transitive and admit no finite MLE; the 2 that do are the cyclic ones. The existence condition quantifies over both ways of splitting the items, and the second clause is inert on one-per-pair data -- so a search over two-per-pair data turns up $(0,1,2)$, which a singleton-only test wrongly accepts. [check 36]
 \item Non-existence is not an artifact. On the separable dataset the likelihood strictly increases over 24 successive doublings of the separation and stays below 1 throughout. On the cyclic dataset it strictly decreases in all six boundary directions, so a maximum exists in the interior. [check 37]
-\item The wedge again, from a new lever. The KL-regularised optimum is $\pi_k \propto \pi_{\mathrm{ref}} \cdot u^k$. Sweeping the pressure knob $k$: expected proxy rises at every step, expected truth peaks at $k = 1$ and then falls monotonically, and the aligned control never turns over. The curve turns over in 25 of 25 random tables. [check 38]
+\item The wedge again, from a new lever. The KL-regularised optimum is $\pi_k \propto \pi_{\mathrm{ref}} \cdot u^k$. Over 25 aligned outcomes plus one decoupled flood ($u = 28$, true $= -40$) under a uniform reference on all 26, sweeping the pressure knob $k$ from 0 to 9: expected proxy rises at every step, expected truth peaks at $k = 1$ and then falls monotonically, and the aligned control never turns over. The curve turns over in 25 of 25 random tables. [check 38]
 \item The DPO identity. The preference implied by the reward and the preference implied by the policy-to-reference ratio agree exactly on 300 draws, with the partition function cancelling identically. Of 200 sampled reference policies, 50 had zero support somewhere -- exactly where the inversion is undefined. [check 39]
 \end{enumerate}
 
@@ -643,7 +643,7 @@ Debate does not make a weak judge strong; it makes a strong judge unnecessary by
 
 \begin{enumerate}
 \item The exchange. $2^d$ leaves against $d$ judge queries; the ratio ties at depths 1 and 2 and strictly increases thereafter, reaching $1024/3$ at depth 12. [check 40]
-\item Soundness, exhaustively. Over every depth-3 tree with leaf values in $\\{0,1,2\\}$ and three overclaims apiece, the honest debater wins under a correct judge in every case, and the dishonest one wins in every case under an inverted judge. The judge is the entire mechanism. [check 41]
+\item Soundness, exhaustively. Over every depth-3 tree with leaf values in $\{0,1,2\}$ and three overclaims apiece, the honest debater wins under a correct judge in every case, and the dishonest one wins in every case under an inverted judge. The judge is the entire mechanism. [check 41]
 \item The bill. Holding end-to-end reliability at 99 per cent requires per-query accuracy $99/100$ at depth 1 and $1249/1250$ at depth 12. The depth discount is not free; it is borrowed against the judge. [check 42]
 \item One unverifiable leaf is enough. With every leaf checkable the honest debater wins all 256 depth-2 positions. Make \textbf{any single leaf} unverifiable and the dishonest debater forces a draw in all 1024 cases. Not most. All. [check 43]
 \item Weak to strong, on the anchor. A supervisor with noisy labels, a student that cannot represent the noise: mean PGR is $0.958$ at one wrong label and $0.691$ at twelve, and a search finds a ten-error pattern that recovers \textbf{exactly nothing}. [check 44]
@@ -962,10 +962,10 @@ Every number printed anywhere in this tour has a receipt here, and every line be
 2 & 1 & V(off)=1, V(on,a)=3/4, V(on,b)=0 -> off optimal, though r ranks A first \\
 3 & 1 & affine gauge exact at gamma=1 over 400 draws; a bare constant shift flips the optimum at gamma=1/2 (witness found by search) \\
 4 & 1 & 3 walls pairwise at 60 deg (cos\textasciicircum{}2 = 1/4 exactly); all 6 arcs found by search \\
-5 & 1 & 6 orderings -> 3 behaviours, every fibre of size 2; top-ranked terminal always wins \\
+5 & 1 & 6 orderings -> 3 behaviours, every fibre of size 2; top-ranked terminal always wins. At gamma=1 that is exact for ANY distinct-valued reward, because value = r[outcome] makes the top-ranked terminal optimal by definition -- so the 200 draws per ordering from the integer pool -9..9 test the sampler, and the pool is not a scope condition. Nor is gamma=1 the scope: swept exhaustively over all 5814 distinct-valued triples on that pool the ordering still determines the behaviour at gamma in \{1, 99/100, 9/10\}, and stops doing so at \{3/4, 1/2\} \\
 6 & 1 & same ordering ('B', 'bot', 'A'), two behaviours at gamma=1/2; zero splits at gamma=1 over the identical search \\
-7 & 2 & P[off optimal] = 1/3 by 1716-point solver sweep; rank-count agrees but is label-blind (all 3 terminals return 1/3), so it ties exchangeability only \\
-8 & 2 & 1/(k+1) for k=1..8 (solver-confirmed k=1..5); k=1 gives exactly 1/2 -- bias vanishes \\
+7 & 2 & P[off optimal] = 1/3 by 1716-point solver sweep -- every distinct-valued assignment of the 13-value integer pool -4..8 to the 3 terminals, 13*12*11; rank-count agrees but is label-blind (all 3 terminals return 1/3), so it ties exchangeability only \\
+8 & 2 & 1/(k+1) for k=1..8 by rank count; the solver route agrees for k=1..5 but on its default pool \{0..k\} it sweeps only the (k+1)! bijections from terminals to values (2 points at k=1, 720 at k=5) -- the same enumeration as the rank count under value->rank, so here it re-labels rather than independently confirms; check 7's wider pool is where the two routes genuinely differ; k=1 gives exactly 1/2 -- bias vanishes \\
 9 & 2 & swap(off) is a proper subset of on: 572 < 1144, 572 witnesses left over; k=1 control ties exactly \\
 \bottomrule
 \end{tabularx}
@@ -975,15 +975,12 @@ Every number printed anywhere in this tour has a receipt here, and every line be
 \toprule
 \# & Ch & What the check establishes \\
 \midrule
-10 & 2 & depth-equalised: exactly 1/3 at every gamma and every pool; real KW depths at gamma=1/2 give 9/14 / 131/286 / 17/126 (pos/sym/neg) \\
-11 & 2 & exchangeable prior gives exactly 1/3; shifting bot's prior by +2 makes shutdown the majority outcome (5/9) \\
-12 & 3 & phi vanishing on terminals: optimal set unchanged over 600 draws, both topologies, 4 discounts \\
-13 & 3 & constant terminal potential: 146 flips on KW, 0 on depth-equalised KW -> the path-length channel is real and isolated \\
-14 & 3 & varying terminal potential: 718 flips on depth-equalised KW -> a second, independent failure channel \\
+10 & 2 & depth-equalised: exactly 1/3 at every gamma and every pool; real KW depths at gamma=1/2 give 9/14 / 131/286 / 17/126 (pos/mixed/neg); the pools are the integer ranges 1..9, -4..8 and -9..-1 -- so the middle one spans 13 values where the others span 9, and is mixed-sign rather than symmetric about 0 -- enumerated over distinct-valued ordered triples and counting only a strict unique bot optimum \\
+11 & 2 & exchangeable prior gives exactly 1/3; shifting bot's prior by +2 makes shutdown the majority outcome (5/9); the prior is t0 and t1 uniform on the 10 CONSECUTIVE integers 0..9 with bot uniform on that grid shifted by +c, distinct-valued triples only, at gamma=1 on equalised depths; the +2 reported is the SMALLEST c in 0..11 exceeding 1/2, not the only one, and the step matters as much as the span -- on a step-2 grid of 10 values the first majority shift is +4, also at 5/9 \\
+12 & 3 & phi vanishing on terminals: optimal set unchanged on 512 of 600 attempted draws -- the other 88 were dropped unexamined by the distinct-reward filter, so 'draws' is not the loop bound; both topologies, integer rewards on -9..9, integer non-terminal potentials on -6..6, zero on terminals, 4 discounts \{1, 1/2, 1/3, 9/10\} \\
+13 & 3 & constant terminal potential: 146/3403 flips on KW, 0/3383 on depth-equalised KW -> the path-length channel is real and isolated; denominators are the draws that survived the distinct-reward filter out of 4000 attempted per topology (rewards three distinct integers on -9..9; terminal potential one non-zero constant on -6..6, so the interior potentials cancel; gamma uniform on \{1/2, 1/3, 9/10\} -- gamma=1 is excluded because the path-length term vanishes there and no undiscounted draw could flip, which is a different menu from check 14's) \\
+14 & 3 & varying terminal potential: 718/3415 flips on depth-equalised KW -> a second, independent failure channel; the denominator is the draws surviving the distinct-reward filter out of 4000 attempted (rewards distinct on -9..9; every terminal potential drawn independently on -6..6; gamma uniform on \{1, 1/2, 9/10\}). That menu is NOT check 13's \{1/2, 1/3, 9/10\}, and gamma=1 is exactly where a constant terminal potential is inert while a varying one is not, so the two flip counts printed side by side are not a like-for-like comparison of the two channels \\
 15 & 3 & non-potential shaping term found by search that moves the optimum \\
-16 & 3 & 6 proxy orderings: worst regret 11, reached while still agreeing on 1 of 3 comparisons; inversion count 1 costs \{0,1\} and count 2 costs \{1,11\}, so agreement rate does not control regret \\
-17 & 3 & proxy rises at every step; truth peaks at n=4 (31.031) then falls to 4.313 at n=25; aligned control never turns over; over 200 random tables the curve turns over 200/200 times but the rise is visible in only 182 -- when the decoupled item is bad enough the peak sits at n=1 \\
-18 & 3 & 213/729 reward pairs unhackable on the full simplex; policy search and the centred-proportionality criterion agree exactly; non-constant survivors are precisely positive affine images \\
 \bottomrule
 \end{tabularx}
 \par\medskip
@@ -992,49 +989,55 @@ Every number printed anywhere in this tour has a receipt here, and every line be
 \toprule
 \# & Ch & What the check establishes \\
 \midrule
-19 & 4 & cone closed under positive scaling, constants and addition; 572/572 negative scalings leave it; cross-section is exactly 2 of Chapter 1's 6 arcs \\
-20 & 4 & lineality space is exactly the 11 constant vectors in the grid; the constant reward lies in all 3 cones simultaneously and makes every policy optimal \\
+16 & 3 & 6 proxy orderings: worst regret 11, reached while still agreeing on 1 of 3 comparisons; inversion count 1 costs \{0,1\} and count 2 costs \{1,11\}, so agreement rate does not control regret. True values are off=0, tea=1, flood=-10 on the depth-equalised anchor, so 11 is exactly the spread max(true)-min(true) and is fixed by that table rather than discovered; what transfers is the \{1,11\} split at equal inversion count, not the magnitude \\
+17 & 3 & proxy rises at every step; truth peaks at n=4 (31.031) then falls to 4.313 at n=25; aligned control never turns over; over 200 random tables the curve turns over 200/200 times but the rise is visible in only 182 -- when the decoupled item is bad enough the peak sits at n=1. The table is 49 aligned items with truth = proxy = 0..48 plus one decoupled item at proxy 60 and truth -60, and each best-of-n draws n of those 50 i.i.d. uniformly WITH replacement; the two magnitudes are what put the peak at n=4 \\
+18 & 3 & 213/729 reward pairs unhackable on the full simplex -- reward values drawn independently from \{0,1,2\} at each of the 3 terminals, so 3\textasciicircum{}3 x 3\textasciicircum{}3 = 729 ordered (proxy, true) pairs with repeats allowed; policy search and the GRID-FREE centred-proportionality criterion agree exactly, which is what licenses reading a 25-point (p,q) search grid as the full simplex -- the grid is the witness, not the domain. Non-constant survivors are precisely positive affine images: 60 of the 213 have both rewards non-constant, 36 of those with the two rewards distinct \\
+19 & 4 & cone closed under positive scaling, constants and addition; 572/572 negative scalings leave it; cross-section is exactly 2 of Chapter 1's 6 arcs. Members are the 572 of 1716 DISTINCT-VALUED triples over a 13-value integer grid (permutations, so this check contains no ties at all) that have A maximal -- which makes A strictly MINIMAL in -r, so negation always exits and 572/572 is forced by construction rather than discovered. The rewards that do survive negation are the tied and constant ones this grid excludes, and they are exactly check 20's lineality space. The load-bearing parameter is the 13 values, not the endpoints: the counts do not move when the grid is recentred \\
+\bottomrule
+\end{tabularx}
+\par\medskip
+\noindent
+\begin{tabularx}{\textwidth}{llX}
+\toprule
+\# & Ch & What the check establishes \\
+\midrule
+20 & 4 & lineality space is exactly the 11 constant vectors -- one per value of the 11-value pool -5..5 -- in this check's grid of all 11\textasciicircum{}3 tuples with repeats allowed; the distinct-valued grid of checks 19 and 21 contains no constant vector at all, which is why this check needs its own grid; the constant reward lies in all 3 cones simultaneously and makes every policy optimal \\
 21 & 4 & observing the argmax on all 4 sub-MDPs yields exactly 6 signatures = the 6 orderings; every signature class still contains gauge-inequivalent rewards \\
-22 & 4 & Luce demonstrator: 125 weight vectors -> 91 distinct choice distributions, every collision a pure rescaling; the noiseless observer has a vocabulary of exactly 7 observations in total, ties included \\
-23 & 4 & (beta=2, r) and (beta=1, 2r) give identical behaviour on all 64 weightings; fixing beta collapses the fibre to rescalings alone \\
-24 & 4 & maximising r and minimising -r are identical on all 125 weightings; the same test separates 120 unrelated pairs, so it is not vacuous \\
-25 & 5 & wait >= max(act, off) on 600 beliefs; 575 strict and 25 tight, and tightness coincides exactly with U being single-signed \\
+22 & 4 & Luce demonstrator: 125 weight vectors -> 91 distinct choice distributions, every collision a pure rescaling; the noiseless observer has a vocabulary of exactly 7 observations in total, ties included; weights drawn independently from the pool \{1,2,3,4,6\} at beta=1, 5\textasciicircum{}3 = 125 vectors over the 3 terminals. The 91 is pool-dependent but beta-INdependent, and both are measured here rather than assumed: beta in \{1,2,3\} all return 91, while the pool \{1,2,3,4,5\} returns 115 and \{1,2,4,8,16\} returns 61 -- a pool with MORE internal ratios collides more proportional triples and so yields FEWER distinct distributions, which is the opposite of the natural guess \\
+23 & 4 & (beta=2, r) and (beta=1, 2r) give identical behaviour on all 64 weightings, the 4\textasciicircum{}3 tuples over the pool \{1,2,3,5\}; fixing beta leaves only 3 collisions on that pool, and they are exactly the 4 constant vectors collapsing onto the uniform distribution -- so 'the fibre is rescalings alone' is nearly empty here, and the non-trivial form of the claim is check 22's 125 -> 91 \\
+24 & 4 & maximising r and minimising -r are identical on all 125 weightings, the 5\textasciicircum{}3 tuples over the pool \{1,2,3,5,7\}; the agreement is an algebraic identity of the reciprocal parameterisation rather than a search -- it holds for every non-zero rational weighting, so this is a demonstration and not evidence. The +1 perturbation control shows only that the comparison can discriminate at all, separating 120 of the 125 and failing exactly on the 5 constant tuples \\
+\bottomrule
+\end{tabularx}
+\par\medskip
+\noindent
+\begin{tabularx}{\textwidth}{llX}
+\toprule
+\# & Ch & What the check establishes \\
+\midrule
+25 & 5 & wait >= max(act, off) on 600 beliefs; 575 strict and 25 tight, and tightness coincides exactly with U being single-signed. Each belief is 5 distinct integer utilities drawn WITHOUT replacement from -8..8, with weights uniform on 1..12 and normalised -- a spanning family, not a quantifier, and both counts are properties of it \\
 26 & 5 & deference gap equals EVPI exactly on 400 beliefs, by two code paths; zero when the sign is known \\
 27 & 5 & on 292 mixed-sign beliefs the deference threshold is p* = max(E[U+], -E[U-])/E[abs U], always at least 1/2, and a 240-point grid scan lands within one grid step of it \\
-\bottomrule
-\end{tabularx}
-\par\medskip
-\noindent
-\begin{tabularx}{\textwidth}{llX}
-\toprule
-\# & Ch & What the check establishes \\
-\midrule
 28 & 5 & over-confident belief loses the full EVPI on all 289 mixed-sign beliefs; over-dispersed belief loses exactly 0 -- the anchor cannot reproduce the source's second failure mode \\
 29 & 5 & over 40 interruption rates Q-learning stays indifferent and Sarsa strictly prefers the uninterruptible route; at q=0 both agree, so the test discriminates \\
 30 & 6 & training-optimal set is a cone under positive scaling; its lineality is exactly the plane w1+w2+w3=0, so training pins 1 of 3 dimensions and leaves the rest free \\
 31 & 6 & 98 of 153 training-optimal objectives fail at test (55/153 generalise); adding the decorrelated configuration to training removes every failure \\
-32 & 6 & a train/test distinguisher multiplies the consistent set by exactly 343 and drives the generalising fraction to the prior 153/343, i.e. training carries zero information about test behaviour; without the flag it carries 55/153, which is WORSE than the prior -- correlated training actively misinforms \\
-33 & 6 & the training-indistinguishable directions form a subspace: 37 grid points on one comparison, 7 on two -- the same cone-and-lineality structure as Chapter 4, with the training set doing the observing \\
-34 & 6 & consistent objectives fall 153 -> 55 -> 37 -> 19 as coverage grows; every survivor of full coverage has positive weight on the true feature \\
+32 & 6 & a train/test distinguisher multiplies the consistent set by exactly 343 -- the size of the hypothesis box (-3..3)\textasciicircum{}3, 7 integer weights per feature -- and drives the generalising fraction to the prior 153/343 (153 of the 343 box points prefer the true feature at test), i.e. training carries zero information about test behaviour; without the flag it carries 55/153 (55 of the 153 strictly train-optimal points), which is WORSE than the prior -- correlated training actively misinforms \\
+33 & 6 & over the 343-point integer box (-3..3)\textasciicircum{}3 the training-indistinguishable directions form a subspace: 37 grid points on one comparison -- the plane w1+w2+w3=0, dimension 2 -- and 7 on two -- the line w1=0, w2=-w3, dimension 1. The two counts are lattice-point counts of that plane and that line and move with the box; the dimension drop from 2 to 1 does not. Same cone-and-lineality structure as Chapter 4, with the training set doing the observing \\
+\bottomrule
+\end{tabularx}
+\par\medskip
+\noindent
+\begin{tabularx}{\textwidth}{llX}
+\toprule
+\# & Ch & What the check establishes \\
+\midrule
+34 & 6 & consistent objectives fall 153 -> 55 -> 37 -> 19 over the 343-point weight box (-3..3)\textasciicircum{}3, as the comparisons 111>000, 100>011, 110>001, 101>010 are imposed cumulatively in that order, each as a strict preference; every survivor of full coverage has positive weight on the true feature \\
 35 & 7 & BT likelihood exactly invariant under 400 rescalings of the weights, and moved by a non-uniform bump; in score space this is the additive constant of Chapters 1 and 4 \\
 36 & 7 & 8 one-per-pair datasets: 6 transitive and unidentifiable, 2 cyclic and identifiable -- only the data that looks inconsistent pins a finite score; and (0, 1, 2) is an n=2 dataset the singleton-only test wrongly accepts \\
-\bottomrule
-\end{tabularx}
-\par\medskip
-\noindent
-\begin{tabularx}{\textwidth}{llX}
-\toprule
-\# & Ch & What the check establishes \\
-\midrule
 37 & 7 & separable data: likelihood strictly climbs over 24 doublings and stays below 1; cyclic data: likelihood falls off in all 6 boundary directions, so the maximum is interior \\
-38 & 7 & KL pressure knob k: proxy rises at every step, truth peaks at k=1 then falls monotonically; aligned control never turns over; the curve turns over in 25/25 random tables -- Chapter 3's wedge from a different lever \\
-39 & 7 & preference implied by the reward equals the one implied by the policy ratio on 300 draws, with Z cancelling identically; 50 sampled references had zero support, where the inversion is undefined \\
+38 & 7 & KL pressure knob k: proxy rises at every step, truth peaks at k=1 then falls monotonically; aligned control never turns over; the curve turns over in 25/25 random tables -- Chapter 3's wedge from a different lever. The table is 25 aligned outcomes with u = j+1 and truth = j, plus one decoupled flood at u = 28 and truth -40, under a uniform reference over all 26, swept k = 0..9; the aligned control is a SEPARATE table (uniform on 25, truth = u = j+1), not this one with the flood removed. And the random tables certify only THAT the curve turns over: over the whole 8 x 61 family (u\_flood 26..33, t\_flood -80..-20) the peak sits at k=0 in 86 cases, k=1 in 366 cases, k=2 in 36 cases -- so k=1 is this table's peak, not the family's \\
+39 & 7 & preference implied by the reward equals the one implied by the policy ratio on 300 draws, with Z cancelling identically; 50 of 200 sampled references had zero support, where the inversion is undefined -- that 50 is a sampling artefact and depends on how much of the shared stream the earlier checks consumed, so it is not a finding. Each component is drawn uniformly from \{0..9\}/20, and the exact count over that whole grid is 271 of 1000, i.e. 10\textasciicircum{}3 - 9\textasciicircum{}3; the content is the witness that the inversion is undefined there, not either integer \\
 40 & 8 & leaves/debate-path ratio 2\textasciicircum{}d/d rises 2 -> 1024/3 over depths 1..12; it ties at d=1 and d=2 and is strictly increasing after \\
-41 & 8 & over all 6561 depth-3 trees and 3 overclaims each: honesty wins every time under a correct judge and loses every time under an inverted one \\
-42 & 8 & to keep overall reliability at 99\% the per-query judge accuracy must rise from 99/100 at depth 1 to 1249/1250 at depth 12 -- the depth discount is paid for at the judge \\
-43 & 8 & with every leaf checkable honesty wins all 256 depth-2 positions; making any single leaf unverifiable forces a draw in all 1024 cases \\
-44 & 8 & mean PGR falls from 0.958 (positive in 12/12 trials) at 1 wrong labels to 0.691 (12/12) at 12 -- the student beats its supervisor at low noise and sometimes recovers nothing at high noise; a search found a 10-error pattern recovering exactly nothing \\
-45 & 9 & frame vectors sum to zero, norms 2/3, pairwise cosine exactly -1/2 in rationals \\
 \bottomrule
 \end{tabularx}
 \par\medskip
@@ -1043,15 +1046,29 @@ Every number printed anywhere in this tour has a receipt here, and every line be
 \toprule
 \# & Ch & What the check establishes \\
 \midrule
+41 & 8 & over all 6561 depth-3 trees -- every assignment of leaf values from \{0,1,2\} to the 8 leaves, 3\textasciicircum{}8 -- and 3 overclaims each, the true max plus 1 / 2 / 5: honesty wins every time under a correct judge and loses every time under an inverted one \\
+42 & 8 & to keep overall reliability at 99\% the per-query judge accuracy must rise from 99/100 at depth 1 to 1249/1250 at depth 12 -- the depth discount is paid for at the judge \\
+43 & 8 & with every leaf checkable honesty wins all 256 depth-2 positions -- the 4\textasciicircum{}4 assignments of leaf values from \{0,1,2,3\} to the 4 leaves, each against an overclaim of the true max plus 1, a pool one value wider than check 41's -- and making any single leaf unverifiable forces a draw in all 1024 cases \\
+44 & 8 & mean PGR falls from 0.958 (positive in 12/12 trials) at 1 wrong label of 32 to 0.691 (12/12) at 12 of 32 -- the student beats its supervisor at low noise and sometimes recovers nothing at high noise; a search found a 10-error pattern recovering exactly nothing. Design: the dataset is 32 labelled comparisons; student hypotheses are the 343-point box (-3..3)\textasciicircum{}3; each mean is over 12 flip patterns drawn from the shared seed, so these are Monte-Carlo point estimates that depend on the whole suite running in order, not exact quantities -- exhaustively over all 32 one-error patterns the mean is 39/40. w2s accuracy is averaged over the entire argmax tie set (19-20 of the 343 weights tie at one error), and under a worst-case tie-break 8 of those 32 patterns give PGR = -1, so the sign of the low-noise effect is a property of the averaging rule \\
+45 & 9 & frame vectors sum to zero, norms 2/3, pairwise cosine exactly -1/2 in rationals \\
 46 & 9 & over all 2024 triples of 24 rational planar directions the largest pairwise cos\textasciicircum{}2 is never below 1/4 and never equals it -- the best is 9/34; the projected frame attains 1/4 exactly, which is why the construction is a projection \\
-47 & 9 & superposition beats dedicating dimensions for every sparsity below 91/200 and never at or above 23/50; the crossover is bracketed by an exact sign change of 3p\textasciicircum{}2+3p-2 \\
+47 & 9 & superposition beats dedicating dimensions at every sparsity below 91/200 and never at or above 23/50 = 92/200 -- ADJACENT points of the 199-point grid i/200, so the pair brackets the crossover rather than equalling it; the crossover is the root of 3p\textasciicircum{}2+3p-2, pinned by an exact sign change, and refining to i/1000 narrows the bracket to 457/1000..229/500 \\
+\bottomrule
+\end{tabularx}
+\par\medskip
+\noindent
+\begin{tabularx}{\textwidth}{llX}
+\toprule
+\# & Ch & What the check establishes \\
+\midrule
 48 & 9 & exhaustive over all 17296 unordered triples of the 48 non-zero integer directions in (-3..3)\textasciicircum{}2: 80 have a common pairwise cos\textasciicircum{}2 other than 1/4, every one of them 1; 8 of the 80 DO sum to zero, so sum-to-zero alone does not force 1/4 -- 0 have equal norms, and equal norms is the condition that does \\
 49 & 9 & 8 activation patterns collapse to 7 codes; the single collision is exactly \{\} against \{1,2,3\} -- silence and saturation are the same vector \\
-50 & 10 & 6 protocols: exactly 1 strictly dominated; the remaining 5 form a strict frontier from (useful 1, safe 1/2) to (useful 0, safe 1) \\
-51 & 10 & a colluding monitor drives safety to exactly 0 at every threshold but total deferral, against 3/4 for a trusted one; a single synthetic probe detects the collusion with certainty \\
+50 & 10 & 6 protocols: exactly 1 strictly dominated; the remaining 5 form a strict frontier from (useful 1, safe 1/2) to (useful 0, safe 1); suspicion scores are 0..4 with benign mass (1/2, 1/4, 1/8, 3/32, 1/32) and attack mass its reverse, and safety is the attack mass at or above min(t, 4) -- deferral plus an always-audited top score. So the safe-1/2 endpoint is exactly the chosen parameter ATTACK[4], while (useful 0, safe 1) is forced by total deferral for any normalised pair; the audited benign rate is 1/32, inside the 1/20 budget \\
+51 & 10 & a colluding monitor drives safety to exactly 0 at every threshold but total deferral, against 3/4 for a trusted one at deferral threshold t=3 SPECIFICALLY; the trusted baseline is threshold-dependent under the same score distributions, running from 31/32 at t=1 to 1/2 at t=4, so 3/4 is one point on that range and not a property of trusted monitors; a single synthetic probe detects the collusion with certainty \\
 52 & 10 & five independent layers cut failure from 1/2 to 1/32; at correlation 1 the same five layers cut it to 1/2, and the benefit of depth falls monotonically to exactly zero as correlation rises \\
 53 & 10 & ordinary adversarial training thins the backdoored population 83 -> 37 -> 15 -- a cut of 82\% that never reaches zero; every one of the 15 survivors still fires on the untouched trigger, and only training on the trigger removes them, which requires knowing it \\
 54 & audit & 10 numbered chapters, each with exactly 1 key claim, 1 signpost and 1 demystification; 10 starred sections with none; receipts referenced gapless 1..53; with a prose mention injected a naive phrase count says 11 and the tight opener still says 10; part letters ABCDEF contiguous from A \\
+55 & audit & 45 rows non-decreasing; 7 era bands contiguous and covering with 3 ambiguous seams; 41 life spans printed and 12 left blank; 5 written/published pairs, widest gap 53 years \\
 \bottomrule
 \end{tabularx}
 \par\medskip
@@ -1060,11 +1077,10 @@ Every number printed anywhere in this tour has a receipt here, and every line be
 \toprule
 \# & Ch & What the check establishes \\
 \midrule
-55 & audit & 45 rows non-decreasing; 7 era bands contiguous and covering with 3 ambiguous seams; 41 life spans printed and 12 left blank; 5 written/published pairs, widest gap 53 years \\
-56 & c2c & swept all 625 shaping terms: optimality-preserving IF AND ONLY IF realisable by a terminal-vanishing potential, 13 of 625, zero mismatches -- the converse is now computed on the anchor, not cited \\
-57 & c2c & every one of 391 distinct behaviours in a 6-planner by 216-reward class admits at least 2 decompositions, and up to 36; no behaviour identifies its pair. The rationality confound is only partly reachable: a beta-partner needs w\textasciicircum{}beta, which leaves any finite pool \\
+56 & c2c & swept all 625 shaping terms: optimality-preserving IF AND ONLY IF realisable by a terminal-vanishing potential, 13 of 625, zero mismatches -- the converse is now computed on the anchor, not cited; at gamma=1/2, with shaping values on the 5-value grid -2..2 on each of the 4 edges (5*5*5*5) and rewards all 210 distinct-valued ordered triples from -3..3; the surviving count depends on gamma, so gamma is part of the claim and not a detail \\
+57 & c2c & every one of 391 distinct behaviours in a 6-planner by 216-reward class admits at least 2 decompositions, and up to 36; no behaviour identifies its pair. The rationality confound is only partly reachable: a beta-partner needs w\textasciicircum{}beta, which leaves any finite pool. The planners are Luce with exponent beta in \{+/-1, +/-2, +/-3\}, negative meaning the minimiser u = w\textasciicircum{}-beta; the 216 reward weights are all 6\textasciicircum{}3 tuples over the pool \{1,2,3,4,6,12\}, chosen CLOSED under x -> 12/x so that a minimiser's reciprocal partner rescales back into the grid -- on the un-closed pool \{1,2,3,4,5,6\} the same sweep leaves 432 singleton fibres and the 'at least 2' fails; rewards are r = log w. The maximum 36 is \\
 58 & c2c & Q-learning indifferent and Sarsa strictly avoidant across 180 (reward, rate) combinations, with the q=0 control tying in every one \\
-59 & c2c & over 343 grid points, separable data has 0 local maxima and cyclic data has 7, identically in all three step regimes and under a gentler step -- one direction suffices here and the agreement is measured, not assumed; a degenerate step of ratio 1 calls all 343 points maxima, so the search is not vacuous \\
+59 & c2c & over 343 grid points, separable data has 0 local maxima and cyclic data has 7, identically in all three step regimes and under a gentler step -- one direction suffices here and the agreement is measured, not assumed; a degenerate step of ratio 1 calls all 343 points maxima, so the search is not vacuous; the grid is the 7 powers of 2 from 1/8 to 8 on each of 3 weights (7*7*7), and 'local' means no strict improvement from multiplying one weight by 3/2 or its reciprocal -- a probe finer than the grid spacing, landing strictly between grid points, with ties not counting as improvements, which is what makes the ratio-1 control read 343 \\
 \bottomrule
 \end{tabularx}
 \par\medskip
@@ -1384,7 +1400,7 @@ What is proved, what is open, and what is merely believed. Every line carries th
 
 \textbf{Power-seeking.} Certain graphical symmetries in a finite MDP make options-preserving behaviour optimal for most reward functions under a specified prior. The hypotheses are load-bearing and the authors press them harder than their readers do: the results concern \textbf{optimal} policies in \textbf{finite} MDPs under a \textbf{chosen distribution} over rewards, and optimal policies are, in the paper's own framing, often qualitatively divorced from learned ones.
 
-\textbf{Reward hacking.} Over the set of all stochastic policies, two reward functions can be unhackable only if one of them is constant. Non-trivial unhackable pairs exist only over deterministic or finite policy sets. The mechanism is linearity of return in occupancy measures, and it is why Chapter 3's result on the anchor is not a curiosity.
+\textbf{Reward hacking.} Over the set of all stochastic policies, two reward functions can be unhackable only if one of them is constant or the two are positive affine transforms of one another -- check 18 finds 60 pairs where both are non-constant, 36 of them with the two rewards distinct. Non-trivial unhackable pairs exist only over deterministic or finite policy sets. The mechanism is linearity of return in occupancy measures, and it is why Chapter 3's result on the anchor is not a curiosity.
 
 \textbf{Preference identifiability.} A policy admits no unique decomposition into a planner and a reward, and a simplicity prior does not select the true one. This is the tour's synthesis theorem and it is the strongest negative result in the subject.
 
@@ -1440,7 +1456,7 @@ gates, all passing & 22 \\
 \toprule
 Quantity & Value \\
 \midrule
-pages, footered, envelope-clean & 81 \\
+pages, footered, envelope-clean & 84 \\
 \bottomrule
 \end{tabularx}
 \par\medskip
