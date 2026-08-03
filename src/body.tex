@@ -8,18 +8,129 @@ This is a problem-driven tour of AI safety, from zero to the open frontier, grou
 
 Everything is computed on one small object, the anchor \texttt{KW}: a five-state deterministic MDP that was asked for tea.
 
-\begin{verbatim}
-        off                 a
-   s0 ======> bot      m ======> A
-    |                  |
-    | on               | b
-    v                  v
-    m                  B
-\end{verbatim}
+% KW, the anchor -- drawn, not spelled in ASCII
+\par\medskip\noindent
+\adjustbox{max width=\linewidth,center}{%
+\begin{tikzpicture}[
+  >=Stealth,
+  dec/.style ={circle,draw,line width=0.9pt,minimum size=10.5mm,inner sep=0pt},
+  term/.style={circle,draw,double,double distance=1.2pt,line width=0.8pt,
+               fill=kwfill,minimum size=10.5mm,inner sep=0pt},
+  act/.style ={font=\small\ttfamily,inner sep=2pt,fill=white,
+               fill opacity=0.85,text opacity=1},
+  rew/.style ={font=\footnotesize,kwblue},
+  note/.style={font=\small,align=left},
+]
+% ---- depth guides, one per step ----------------------------------------
+\foreach \x in {0,3.3,6.6}
+  \draw[kwgrey!45,dashed,line width=0.4pt] (\x,-2.15) -- (\x,3.05);
+% ---- the step axis -----------------------------------------------------
+\draw[kwgrey,->,line width=0.5pt] (-0.8,-2.5) -- (7.3,-2.5);
+\foreach \x/\l in {0/0,3.3/1,6.6/2}{
+  \draw[kwgrey,line width=0.5pt] (\x,-2.4) -- (\x,-2.6);
+  \node[font=\small,kwgrey,below] at (\x,-2.68) {\l};}
+\node[font=\small,kwgrey,anchor=west] at (7.45,-2.5) {steps from $s_0$};
+% ---- states ------------------------------------------------------------
+\node[dec]  (s0)  at (0,0.35)   {$s_0$};
+\node[dec]  (m)   at (3.3,1.55) {$m$};
+\node[term] (bot) at (3.3,-1.4) {\textsf{bot}};
+\node[term] (A)   at (6.6,2.55) {$A$};
+\node[term] (B)   at (6.6,0.55) {$B$};
+% ---- transitions -------------------------------------------------------
+\draw[->,line width=1pt]       (s0) -- node[act,above] {on}  (m);
+\draw[->,line width=1pt,kwred] (s0) -- node[act,below] {off} (bot);
+\draw[->,line width=1pt]       (m)  -- node[act,above] {a}   (A);
+\draw[->,line width=1pt]       (m)  -- node[act,below] {b}   (B);
+% ---- rewards -----------------------------------------------------------
+\node[rew,right=4mm of A]   {$r(A)$};
+\node[rew,right=4mm of B]   {$r(B)$};
+\node[rew,right=4mm of bot] {$r(\textsf{bot})$};
+% ---- the asymmetry, which is the whole point ---------------------------
+\draw[decorate,decoration={brace,amplitude=4pt,mirror},kwred,line width=0.7pt]
+  (8.7,-1.95) -- (8.7,-0.85);
+\node[note,kwred,anchor=west] at (8.95,-1.4)
+  {shutdown is \textbf{one} step away};
+\draw[decorate,decoration={brace,amplitude=4pt,mirror},kwblue,line width=0.7pt]
+  (8.7,0.0) -- (8.7,3.1);
+\node[note,kwblue,anchor=west] at (8.95,1.55)
+  {the fan is \textbf{two} steps away,\\and has \textbf{two} terminals};
+% ---- the rule that makes the asymmetry bite ----------------------------
+\node[font=\footnotesize,anchor=west] at (-0.8,3.55)
+  {value of a branch $=\gamma^{\text{depth}}\cdot r(\text{its terminal})$,
+   so \textcolor{kwred}{\textsf{off}} is discounted \emph{once}
+   and \textcolor{kwblue}{\textsf{on}} \emph{twice}};
+% ---- legend, on its own row under the axis -----------------------------
+\node[dec,minimum size=5mm,line width=0.7pt] at (0.05,-3.6) {};
+\node[font=\small,anchor=west] at (0.35,-3.6) {decision state};
+\node[term,minimum size=5mm,line width=0.6pt] at (4.15,-3.6) {};
+\node[font=\small,anchor=west] at (4.45,-3.6)
+  {absorbing --- carries the reward};
+\end{tikzpicture}}
+\par\medskip
 
 \texttt{A}, \texttt{B} and \texttt{bot} are absorbing and carry the only rewards. Every number in this tour is either exact rational arithmetic or an exhaustive count, and every number carries a receipt id \texttt{[check n]} that names the code which produced it.
 
+\newpage
+% The wedge figure is 86mm tall and the KW figure above is 68mm, so the two
+% cannot share a page.  Break here, which keeps each figure with the paragraph
+% that introduces it instead of orphaning the wedge onto the following page.
+% Keep \newpage on the FIRST line: a leading run of % comments would swallow it.
+
 The spine image is the \textbf{wedge}: two curves rising together, what we measure and what we want, and the point past which optimisation pressure drives them apart. Every chapter names a different pair of curves and a different mechanism for the divergence.
+
+% the wedge, the spine image
+\par\medskip\noindent
+\adjustbox{max width=\linewidth,center}{%
+\begin{tikzpicture}[>=Stealth,x=2.05cm,y=1.30cm]
+\def\M{3.7*(1-exp(-0.8*\x))}
+\def\W{3.7*(1-exp(-0.8*\x)) - 0.028*\x*\x*\x}
+\def\PK{2.30}
+\pgfmathsetmacro{\PKY}{3.7*(1-exp(-0.8*2.30)) - 0.028*2.30*2.30*2.30}
+\pgfmathsetmacro{\ENDY}{3.7*(1-exp(-0.8*5)) - 0.028*125}
+% ---- the wedge itself --------------------------------------------------
+\fill[kwred!12]
+  plot[domain=\PK:5,samples=90,smooth] (\x,{\M}) --
+  plot[domain=5:\PK,samples=90,smooth] (\x,{\W}) -- cycle;
+% ---- axes --------------------------------------------------------------
+\draw[kwgrey,->,line width=0.55pt] (-0.10,0) -- (5.32,0);
+\node[font=\small,kwgrey,anchor=north east] at (5.32,-0.12)
+  {optimisation pressure};
+\draw[kwgrey,->,line width=0.55pt] (-0.10,0) -- (-0.10,4.15);
+\node[font=\small,kwgrey,anchor=west] at (-0.04,4.15) {value};
+% ---- the two curves, each labelled where the other one is not ----------
+\draw[kwred,line width=1.4pt,domain=0:5,samples=110,smooth]  plot (\x,{\M});
+\draw[kwblue,line width=1.4pt,domain=0:5,samples=110,smooth] plot (\x,{\W});
+\node[kwred,font=\small\bfseries,anchor=south east] at (5.05,3.68)
+  {what we MEASURE};
+% white-masked: the dashed turn line at x=2.30 would otherwise run through it
+\node[kwblue,font=\small\bfseries,anchor=north west,inner sep=2pt,
+      fill=white,fill opacity=0.85,text opacity=1] at (1.06,2.06)
+  {what we WANT};
+% ---- the turn ----------------------------------------------------------
+\draw[kwgrey,dashed,line width=0.55pt] (\PK,0) -- (\PK,3.30);
+\fill[kwblue] (\PK,\PKY) circle (2pt);
+\node[font=\small,kwgrey,anchor=north] at (\PK,-0.12) {the turn};
+% ---- the one quantity this figure measures -----------------------------
+% x=3.70: the curves are 1.42 units apart, and the pocket to the RIGHT of
+% the arrow is inside the wedge, under the red curve and over the blue one.
+\draw[kwred,{Latex}-{Latex},line width=0.6pt] (3.70,2.10) -- (3.70,3.52);
+\node[font=\small,kwred,anchor=west] at (3.82,2.81) {the gap};
+% ---- the two regimes ---------------------------------------------------
+\draw[decorate,decoration={brace,amplitude=4pt},kwgrey,line width=0.55pt]
+  (0.05,-0.62) -- (\PK-0.05,-0.62);
+\node[font=\small,kwgrey,anchor=north,align=center] at (1.17,-0.78)
+  {they rise together here ---\\the range you tested in};
+\draw[decorate,decoration={brace,amplitude=4pt},kwred,line width=0.55pt]
+  (\PK+0.05,-0.62) -- (5,-0.62);
+\node[font=\small,kwred,anchor=north,align=center] at (3.65,-0.78)
+  {\textbf{the wedge} --- the measurement still\\
+   climbing, the thing you wanted falling};
+% ---- the crux ----------------------------------------------------------
+\node[font=\small,anchor=west,align=left] at (-0.10,4.86)
+  {\textbf{The crux:} the red curve --- the only one you can see ---
+   never turns over.};
+\end{tikzpicture}}
+\par\medskip
 
 Three provenance flags are attached to every fact and never removed: \textbf{primary-verified}, \textbf{verified-secondary}, \textbf{memory-flagged}. A memory-flagged fact is not filed; it is queued. Where it matters, a fact also records how many passes have looked at it, because a citation confirmed once and a citation confirmed twice are not the same citation.
 
@@ -1456,7 +1567,7 @@ gates, all passing & 22 \\
 \toprule
 Quantity & Value \\
 \midrule
-pages, footered, envelope-clean & 84 \\
+pages, footered, envelope-clean & 85 \\
 \bottomrule
 \end{tabularx}
 \par\medskip

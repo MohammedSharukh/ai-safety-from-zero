@@ -5,7 +5,7 @@ every number is computed on one five-state MDP and carries a receipt.**
 
 *Mohammed Sharukh A. (NoNTr1v1aL)*
 
-[**Read the book (PDF, 85 pages)**](./AI-Safety-from-Zero.pdf)
+[**Read the book (PDF, 86 pages)**](./AI-Safety-from-Zero.pdf)
 
 ---
 
