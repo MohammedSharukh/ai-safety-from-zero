@@ -24,7 +24,7 @@ keywords:
   - reinforcement learning
   - interpretability
   - scalable oversight
-version: 1.1.1
+version: 1.2.0
 license: CC-BY-4.0
 date-released: '2026-08-04'
 url: 'https://github.com/MohammedSharukh/ai-safety-from-zero'
