@@ -929,7 +929,7 @@ It is the third appearance of the dimension Chapter 1 found as gauge and Chapter
 38. The wedge again, from a new lever. The KL-regularised optimum is $\pi_k \propto \pi_{\mathrm{ref}} \cdot u^k$. Over 25 aligned outcomes plus one
 decoupled flood ($u = 28$, true $= -40$) under a uniform reference on all 26,
 sweeping the pressure knob $k$ from 0 to 9: expected proxy rises at every step, expected truth peaks at $k = 1$ and then falls monotonically, and the aligned control never turns over. The curve turns over in 25 of 25 random tables. [check 38]
-39. The DPO identity. The preference implied by the reward and the preference implied by the policy-to-reference ratio agree exactly on 300 draws, with the partition function cancelling identically. Of 200 sampled reference policies, 50 had zero support somewhere -- exactly where the inversion is undefined. [check 39]
+39. The DPO identity. The preference implied by the reward and the preference implied by the policy-to-reference ratio agree exactly on 300 draws, with the partition function cancelling identically. Of 200 sampled reference policies, 50 had zero support somewhere -- exactly where the inversion is undefined. Each component is drawn uniformly from $\{0,\dots,9\}/20$, so a zero appears with probability $1-(9/10)^3$ and $54.2$ of the 200 are expected; the 50 is therefore a property of the sampler, and what it buys is a witness rather than a rate. Exactly $271$ of the $1000$ grid points have one. [check 39]
 
 <!--TEX: \bmn{Consistent preferences give you the order and nothing else.}-->
 
@@ -973,9 +973,12 @@ qualitative shape is searched for genericity.
 Check 39 verifies the DPO reparameterisation as an algebraic identity on the
 anchor. It does not verify the derivation in the paper, whose stated assumptions
 about the reference policy's support remain memory-flagged after two research
-passes; what the check does is exhibit 50 sampled references where the inversion
-is undefined, which makes the assumption concrete without confirming how the
-source states it.
+passes; what the check does is exhibit the 50 of 200 sampled references where
+the inversion is undefined, which makes the assumption concrete without
+confirming how the source states it. That 50 is a property of the sampler and
+not a finding: it also depends on how much of the shared random stream the
+earlier checks consumed. The quantity that does not move is the exact count over
+the whole grid, $271$ of $1000$, which the check now computes alongside it.
 
 The Bradley-Terry shift-invariance was computed here rather than cited through
 two research passes; a third pass supplied the citation, and Ford 1957 now
